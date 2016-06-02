@@ -35,3 +35,32 @@ end
 
 AddHook(myMover)
 --start_repl()
+
+local wall = GetActor("Wall_400x200_8")
+print(wall)
+
+local t2 = 0
+
+function wallRotation1(dt)
+	local succ = SetActorRotation(wall, 0, 0, (t - t2) * 20)
+	--print('wallRotation1 succ', succ, t, (t - t2) * 20)
+	if (t - t2) * 20 >= 90 then
+		RemoveHook(wallRotation1)
+		AddHook(wallRotation2)
+		t2 = t
+	end
+	t = t + dt
+end
+
+function wallRotation2(dt)
+	local succ = SetActorRotation(wall, 0, 0, 90 - (t - t2) * 20)
+	--print('wallRotation2 succ', succ, t, (t - t2) * 20)
+	if (t - t2) * 20 >= 90 then
+		RemoveHook(wallRotation2)
+		AddHook(wallRotation1)
+		t2 = t
+	end
+	t = t + dt
+end
+
+AddHook(wallRotation1)
