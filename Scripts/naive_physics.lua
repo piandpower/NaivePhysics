@@ -19,7 +19,12 @@ setGroundMaterial(r)
 local t = 0
 local obj = GetActor("Sphere_4")
 local firstMover = true
-local cont = 0
+local currentIteration = 0
+
+function SetCurrentIteration(iteration)
+	currentIteration = iteration
+	print('SetCurrentIteration',iteration,currentIteration)
+end
 
 function myMover(dt)
 	if firstMover then
@@ -62,36 +67,36 @@ AddHook(wallRotation1)
 
 local last_save_t = 0
 local t3 = 0
-local it = 0
+local step = 0
 
 function saveScreen(dt)
 	t3 = t3 + dt
 
 	if t3 - last_save_t >= getScreenCaptureInterval() then
-		local file1 = getDataPath() .. it .. '_screen.jpg'
-		print(file1,t3,dt)
-	    local i1 = Screen()
+		step = step + 1
+		local file1 = getDataPath() .. currentIteration .. '/' .. step .. '_screen.jpg'
+		--print(file1,t3,dt)
+		local i1 = Screen()
 
-	    if i1 then
-	      image.save(file1, i1)
-	    end
+		if i1 then
+			image.save(file1, i1)
+		end
 
 		local actors = {obj, wall}
-	    local file2 = getDataPath() .. it .. '_objseg.jpg'
-	    local i2 = ObjectSegmentation(actors, getStride())
+		local file2 = getDataPath() .. currentIteration .. '/' .. step .. '_objseg.jpg'
+		local i2 = ObjectSegmentation(actors, getStride())
 
-	    if i2 then
+		if i2 then
 			image.save(file2,i2)
-	    end
+		end
 
-	    local file3 = getDataPath() .. it .. '_mask.jpg'
-	    local i3 = ObjectMasks(actors, getStride())
+		local file3 = getDataPath() .. currentIteration .. '/' .. step .. '_mask.jpg'
+		local i3 = ObjectMasks(actors, getStride())
 
-	    if i3 then
+		if i3 then
 			image.save(file3,i3[1])
-	    end
+		end
 
-	    it = it + 1
 		last_save_t = t3
 	end
 

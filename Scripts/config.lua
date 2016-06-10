@@ -25,8 +25,6 @@ function getStride()
 	return config['stride']
 end
 
-function doIteration()
-	local iteration = config['iterations']
-	config['iterations'] = config['iterations'] - 1
-	return iteration
+function getIterations()
+	return config['iterations']
 end
