@@ -1,30 +1,34 @@
-config = {
+local config = {}
+
+conf = {
 	--seed = 0,
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	screenCaptureInterval = 0.125,
-	sceneTime = 15.0,
-	stride = 5,
-	iterations = 10
+	sceneTime = 10.0,
+	stride = 4,
+	iterations = 1
 	--loadTime = 2.0, -- 1s
 	--resolution = 'nil', -- this gets interpreted by the blueprints as NULL, but you can still override
 }
 
-function getDataPath()
-	return config['dataPath']
+function config.GetDataPath()
+	return conf['dataPath']
 end
 
-function getScreenCaptureInterval()
-	return config['screenCaptureInterval']
+function config.GetScreenCaptureInterval()
+	return conf['screenCaptureInterval']
 end
 
-function getSceneTime()
-	return config['sceneTime']
+function config.GetSceneTime()
+	return conf['sceneTime']
 end
 
-function getStride()
-	return config['stride']
+function config.GetStride()
+	return conf['stride']
 end
 
-function getIterations()
-	return config['iterations']
+local function GetIterations()
+	return conf['iterations']
 end
+
+return config
