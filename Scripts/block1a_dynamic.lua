@@ -19,6 +19,7 @@ local function MyMover(dt)
 end
 
 local t_rotation_change = 0
+local WallRotation2
 
 local function WallRotation1(dt)
 	local succ = uetorch.SetActorRotation(wall, 0, 0, (t - t_rotation_change) * 20)
@@ -31,7 +32,7 @@ local function WallRotation1(dt)
 	t = t + dt
 end
 
-local function WallRotation2(dt)
+WallRotation2 = function(dt)
 	local succ = uetorch.SetActorRotation(wall, 0, 0, 90 - (t - t_rotation_change) * 20)
 	if (t - t_rotation_change) * 20 > 90 then
 		uetorch.RemoveTickHook(WallRotation2)
