@@ -11,11 +11,19 @@ local succ
 
 local function MyMover(dt)
 	if firstMover then
-		succ = uetorch.SetActorLocation(sphere, -400, -500, 70 + math.random(200))
-		forceX = math.random(800000, 1500000)
-		forceY = 0
-		forceZ = math.random(800000, 1000000)
-		signZ = 2 * math.random(2) - 3
+		local forceX = math.random(800000, 1500000)
+		local forceY = 0
+		local forceZ = math.random(800000, 1000000)
+		local signZ = 2 * math.random(2) - 3
+		local left = math.random(0,1)
+
+		if left == 1 then
+			succ = uetorch.SetActorLocation(sphere, -400, -500, 70 + math.random(200))
+		else
+			succ = uetorch.SetActorLocation(sphere, 500, -500, 70 + math.random(200))
+			forceX = -forceX
+		end
+
 		succ = uetorch.AddForce(sphere, forceX, forceY, signZ * forceZ)
 		firstMover = false
 	end
