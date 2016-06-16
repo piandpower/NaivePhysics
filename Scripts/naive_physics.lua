@@ -78,4 +78,7 @@ local function SaveScreen(dt)
 end
 
 block.set_block()
-uetorch.AddTickHook(SaveScreen)
+
+if config.Save() then
+	uetorch.AddTickHook(SaveScreen)
+end

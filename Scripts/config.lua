@@ -6,7 +6,8 @@ conf = {
 	screenCaptureInterval = 0.125,
 	sceneTime = 15.0,
 	stride = 4,
-	iterations = 2
+	iterations = 2,
+	save = true
 	--loadTime = 2.0, -- 1s
 	--resolution = 'nil', -- this gets interpreted by the blueprints as NULL, but you can still override
 }
@@ -29,6 +30,10 @@ end
 
 function GetIterations()
 	return conf['iterations']
+end
+
+function config.Save()
+	return conf['save']
 end
 
 return config

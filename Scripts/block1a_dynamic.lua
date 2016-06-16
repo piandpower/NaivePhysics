@@ -7,13 +7,19 @@ block.actors = {sphere=sphere, wall=wall}
 
 local t = 0
 local firstMover = true
+local succ
 
 local function MyMover(dt)
 	if firstMover then
-		local succ = uetorch.SetActorLocation(sphere, -400, -500, 70)
+		succ = uetorch.SetActorLocation(sphere, -400, -500, 70 + math.random(200))
+		forceX = math.random(800000, 1500000)
+		forceY = 0
+		forceZ = math.random(800000, 1000000)
+		signZ = 2 * math.random(2) - 3
+		succ = uetorch.AddForce(sphere, forceX, forceY, signZ * forceZ)
 		firstMover = false
 	end
-	local succ = uetorch.SetActorVelocity(sphere,100,0,0)
+	--local succ = uetorch.SetActorVelocity(sphere,100,0,0)
 	--print('sphere :',succ,t,uetorch.GetActorLocation(sphere),uetorch.GetActorVelocity(sphere))
 	t = t + dt
 end
@@ -41,7 +47,6 @@ WallRotation2 = function(dt)
 	end
 	t = t + dt
 end
-
 
 function block.set_block()
 	uetorch.AddTickHook(MyMover)
