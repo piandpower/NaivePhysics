@@ -1,7 +1,7 @@
 local uetorch = require 'uetorch'
 local image = require 'image'
 local config = require 'config'
-local block = require 'block1a_dynamic'
+local block = require(config.GetBlock())
 
 uetorch.SetTickDeltaBounds(1/16, 1/16)
 GetSceneTime = config.GetSceneTime
@@ -79,6 +79,6 @@ end
 
 block.set_block()
 
-if config.Save() then
+if config.GetSave() then
 	uetorch.AddTickHook(SaveScreen)
 end

@@ -7,7 +7,8 @@ conf = {
 	sceneTime = 15.0,
 	stride = 4,
 	iterations = 2,
-	save = true
+	save = true,
+	block = 'block1a_static'
 	--loadTime = 2.0, -- 1s
 	--resolution = 'nil', -- this gets interpreted by the blueprints as NULL, but you can still override
 }
@@ -32,8 +33,12 @@ function GetIterations()
 	return conf['iterations']
 end
 
-function config.Save()
+function config.GetSave()
 	return conf['save']
+end
+
+function config.GetBlock()
+	return conf['block']
 end
 
 return config
