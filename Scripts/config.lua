@@ -7,17 +7,22 @@ conf = {
 	sceneTime = {
 		block1a_static = 10.0,
 		block1a_dynamic = 12.0,
+		block1c = 15.0
 	},
 	stride = 4,
 	save = true,
 	blocks = {
 		{
-			iterations = 1,
+			iterations = 4,
 			block = 'block1a_static'
 		},
 		{
-			iterations = 1,
+			iterations = 4,
 			block = 'block1a_dynamic'
+		},
+		{
+			iterations = 4,
+			block = 'block1c'
 		}
 	}
 	--loadTime = 2.0, -- 1s
