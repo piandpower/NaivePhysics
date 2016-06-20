@@ -44,7 +44,7 @@ end
 
 function block.set_block()
 	uetorch.AddTickHook(WallRotation2)
-	uetorch.SetActorLocation(sphere, 150, -500, 0)
+	uetorch.SetActorLocation(sphere, 150, -500, 70)
 	uetorch.SetActorVisible(sphere, sphere_visible)
 end
 
