@@ -49,7 +49,7 @@ end
 
 function block.set_block()
 	uetorch.AddTickHook(MyMover)
-	uetorch.AddTickHook(WallRotation1)
+	uetorch.AddTickHook(WallRotation2)
 	uetorch.SetActorScale3D(wall1, 0.5, 1, 1)
 	uetorch.SetActorScale3D(wall2, 0.5, 1, 1)
 	uetorch.SetActorLocation(wall2, 200, -400, 20)

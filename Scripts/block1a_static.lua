@@ -8,24 +8,16 @@ block.actors = {sphere=sphere, wall=wall}
 local t_mover = 0
 local firstMover = true
 local succ
-
-local function MyMover(dt)
-	if firstMover then
-		succ = uetorch.SetActorLocation(sphere, 150, -500, 0)
-		firstMover = false
-	end
-	--print('sphere :',succ,t,uetorch.GetActorLocation(sphere),uetorch.GetActorVelocity(sphere))
-	t_mover = t_mover + dt
-end
+local sphere_visible = true
 
 local t_rotation = 0
 local t_rotation_change = 0
 local WallRotation2
 
 local function WallRotation1(dt)
-	local succ = uetorch.SetActorRotation(wall, 0, 0, (t_rotation - t_rotation_change) * 20)
-	--print('wallRotation1 succ', succ, t, (t - t_rotation_change) * 20, uetorch.GetActorRotation(wall))
-	if (t_rotation - t_rotation_change) * 20 > 90 then
+	local angle = (t_rotation - t_rotation_change) * 20
+	local succ = uetorch.SetActorRotation(wall, 0, 0, angle)
+	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotation1)
 		uetorch.AddTickHook(WallRotation2)
 		t_rotation_change = t_rotation
@@ -34,18 +26,26 @@ local function WallRotation1(dt)
 end
 
 WallRotation2 = function(dt)
-	local succ = uetorch.SetActorRotation(wall, 0, 0, 90 - (t_rotation - t_rotation_change) * 20)
-	if (t_rotation - t_rotation_change) * 20 > 90 then
+	local angle = (t_rotation - t_rotation_change) * 20
+	local succ = uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
+	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotation2)
 		uetorch.AddTickHook(WallRotation1)
 		t_rotation_change = t_rotation
+		if math.random(2) == 1 then
+			sphere_visible = true
+		else
+			sphere_visible = false
+		end
+		uetorch.SetActorVisible(sphere, sphere_visible)
 	end
 	t_rotation = t_rotation + dt
 end
 
 function block.set_block()
-	uetorch.AddTickHook(MyMover)
-	uetorch.AddTickHook(WallRotation1)
+	uetorch.AddTickHook(WallRotation2)
+	uetorch.SetActorLocation(sphere, 150, -500, 0)
+	uetorch.SetActorVisible(sphere, sphere_visible)
 end
 
 return block

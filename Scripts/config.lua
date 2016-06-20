@@ -6,8 +6,8 @@ conf = {
 	screenCaptureInterval = 0.125,
 	sceneTime = {
 		block1a_static = 10.0,
-		block1a_dynamic = 12.0,
-		block1c = 15.0
+		block1a_dynamic = 11.0,
+		block1c = 10.0
 	},
 	stride = 4,
 	save = true,
