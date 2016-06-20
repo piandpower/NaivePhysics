@@ -1,22 +1,24 @@
 import cv2
 
-path = "data/1/"
+path = "data/"
 suffix = "_screen"
-width, height = 1128, 555
+width, height = 1171, 584
 fps = 24
 
-video = cv2.VideoWriter(path + 'video.avi', cv2.cv.CV_FOURCC('M','J','P','G'), fps, (width,height))
+ndata = 12
 
-pos = 1
+for i in range(1,1 + ndata):
+	video = cv2.VideoWriter(path + '/video' + str(i) + '.avi', cv2.cv.CV_FOURCC('M','J','P','G'), fps, (width,height))
+	pos = 1
 
-while True:
-	name = path + str(pos) + suffix + '.jpg'
-	img = cv2.imread(name)
-	
-	if img is None:
-		break
+	while True:
+		name = path + str(i) + "/" + str(pos) + suffix + '.jpg'
+		img = cv2.imread(name)
 
-	video.write(img)
-	pos += 1
+		if img is None:
+			break
 
-video.release()
+		video.write(img)
+		pos += 1
+
+	video.release()
