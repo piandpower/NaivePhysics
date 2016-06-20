@@ -7,6 +7,7 @@ uetorch.SetTickDeltaBounds(1/16, 1/16)
 GetSceneTime = config.GetSceneTime
 
 local currentIteration = 0
+local r = math.random(5)
 local ground_materials = {"M_Basic_Floor", "M_Ground_Grass", "M_Ground_Moss", "M_Wood_Floor_Walnut_Polished", "M_Wood_Floor_Walnut_Worn"}
 
 local function SetGroundMaterial(id)
@@ -15,9 +16,6 @@ local function SetGroundMaterial(id)
 	local floor = uetorch.GetActor('Floor')
 	uetorch.SetMaterial(floor, material)
 end
-
-local r = math.random(5)
-SetGroundMaterial(r)
 
 local function dict_to_array(a)
 	local ret = {}
@@ -72,6 +70,8 @@ end
 function SetCurrentIteration(iteration)
 	currentIteration = iteration
 	print('current iteration =', currentIteration)
+
+	SetGroundMaterial(r)
 
 	block = require(config.GetBlock(iteration))
 	actors = dict_to_array(block.actors)
