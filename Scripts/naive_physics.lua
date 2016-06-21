@@ -9,11 +9,11 @@ GetSceneTime = config.GetSceneTime
 local currentIteration = 0
 local r = math.random(5)
 local ground_materials = {"M_Basic_Floor", "M_Ground_Grass", "M_Ground_Moss", "M_Wood_Floor_Walnut_Polished", "M_Wood_Floor_Walnut_Worn"}
+local floor = uetorch.GetActor('Floor')
 
 local function SetGroundMaterial(id)
 	local materialId = "Material'/Game/StarterContent/Materials/" .. ground_materials[id] .. "." .. ground_materials[id] .. "'"
 	local material = UE.FindObject(Material.Class(), nil, materialId)
-	local floor = uetorch.GetActor('Floor')
 	uetorch.SetMaterial(floor, material)
 end
 
@@ -104,6 +104,12 @@ function SaveData()
 	local filename = config.GetDataPath() .. currentIteration .. '/data.txt'
 	local file = assert(io.open(filename, "w"))
 	file:write("block = " .. config.GetBlock(currentIteration) .. "\n")
+	local bounds = uetorch.GetActorBounds(floor)
+	local minx = bounds["x"] - bounds["boxX"]
+	local maxx = bounds["x"] + bounds["boxX"]
+	local miny = bounds["y"] - bounds["boxY"]
+	local maxy = bounds["y"] + bounds["boxY"]
+	file:write("minX = " .. minx .. " maxX = " .. maxx .. " minY = " .. miny .. " maxY = " .. maxy .. "\n")
 
 	for k, v in ipairs(data) do
 		file:write("step = " .. k .. "\n")
