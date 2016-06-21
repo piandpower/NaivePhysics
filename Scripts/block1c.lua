@@ -6,7 +6,7 @@ local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
 local t_rotation = 0
 local t_rotation_change = 0

@@ -5,7 +5,7 @@ local sphere = uetorch.GetActor("Sphere_4")
 local wall = uetorch.GetActor("Wall_400x200_8")
 block.actors = {sphere=sphere, wall=wall}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
 local function init_sphere()
 	local forceX = math.random(800000, 1100000)
