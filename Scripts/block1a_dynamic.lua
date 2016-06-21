@@ -5,28 +5,23 @@ local sphere = uetorch.GetActor("Sphere_4")
 local wall = uetorch.GetActor("Wall_400x200_8")
 block.actors = {sphere=sphere, wall=wall}
 
-local t_mover = 0
-local firstMover = true
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 
-local function MyMover(dt)
-	if firstMover then
-		local forceX = math.random(800000, 1400000)
-		local forceY = 0
-		local forceZ = math.random(800000, 1000000)
-		local signZ = 2 * math.random(2) - 3
-		local left = math.random(0,1)
+local function init_sphere()
+	local forceX = math.random(800000, 1100000)
+	local forceY = 0
+	local forceZ = math.random(800000, 1000000)
+	local signZ = 2 * math.random(2) - 3
+	local left = math.random(0,1)
 
-		if left == 1 then
-			uetorch.SetActorLocation(sphere, -400, -550, 70 + math.random(200))
-		else
-			uetorch.SetActorLocation(sphere, 500, -550, 70 + math.random(200))
-			forceX = -forceX
-		end
-
-		uetorch.AddForce(sphere, forceX, forceY, signZ * forceZ)
-		firstMover = false
+	if left == 1 then
+		uetorch.SetActorLocation(sphere, -400, -550, 70 + math.random(200))
+	else
+		uetorch.SetActorLocation(sphere, 500, -550, 70 + math.random(200))
+		forceX = -forceX
 	end
-	t_mover = t_mover + dt
+
+	uetorch.AddForce(sphere, forceX, forceY, signZ * forceZ)
 end
 
 local t_rotation = 0
@@ -61,9 +56,10 @@ local function WallRotationUp(dt)
 end
 
 function block.set_block()
-	uetorch.AddTickHook(MyMover)
 	uetorch.AddTickHook(WallRotationUp)
+	uetorch.SetActorLocation(camera, 100, 30, 80)
 	uetorch.SetActorLocation(wall, -100, -350, 20)
+	init_sphere()
 end
 
 return block
