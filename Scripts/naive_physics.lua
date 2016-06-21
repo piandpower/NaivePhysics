@@ -103,7 +103,7 @@ end
 function SaveData()
 	local filename = config.GetDataPath() .. currentIteration .. '/data.txt'
 	local file = assert(io.open(filename, "w"))
-	file:write("block = " .. config.GetBlock(currentIteration))
+	file:write("block = " .. config.GetBlock(currentIteration) .. "\n")
 
 	for k, v in ipairs(data) do
 		file:write("step = " .. k .. "\n")
