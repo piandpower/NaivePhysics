@@ -3,6 +3,10 @@
 
 Developed with [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4) 4.8 and the [UETorch](https://github.com/facebook/UETorch) plugin.
 
+## Installation details
+
+The **Scripts** folder must be added to the Lua path.
+
 ## Main script
 
 The **naive_physics.lua** file contains two main functions which are called from Unreal's blueprints:
