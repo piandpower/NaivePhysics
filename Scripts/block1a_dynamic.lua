@@ -7,7 +7,7 @@ block.actors = {sphere=sphere, wall=wall}
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
-local function init_sphere()
+local function initSphere()
 	local forceX = math.random(800000, 1100000)
 	local forceY = 0
 	local forceZ = math.random(800000, 1000000)
@@ -26,6 +26,8 @@ end
 
 local t_rotation = 0
 local t_rotation_change = 0
+local framesStartDown
+local framesRemainUp
 
 local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
@@ -37,12 +39,20 @@ local function WallRotationDown(dt)
 	t_rotation = t_rotation + dt
 end
 
+local function RemainUp(dt)
+	framesRemainUp = framesRemainUp - 1
+	if framesRemainUp == 0 then
+		uetorch.RemoveTickHook(RemainUp)
+		uetorch.AddTickHook(WallRotationDown)
+	end
+end
+
 local function WallRotationUp(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
 	uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationUp)
-		uetorch.AddTickHook(WallRotationDown)
+		uetorch.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
 
 		if math.random(2) == 1 then
@@ -55,11 +65,22 @@ local function WallRotationUp(dt)
 	t_rotation = t_rotation + dt
 end
 
+local function StartDown(dt)
+	framesStartDown = framesStartDown - 1
+	if framesStartDown == 0 then
+		uetorch.RemoveTickHook(StartDown)
+		uetorch.AddTickHook(WallRotationUp)
+	end
+end
+
 function block.set_block()
+	framesStartDown = math.random(5)
+	framesRemainUp = math.random(5)
 	uetorch.AddTickHook(WallRotationUp)
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 	uetorch.SetActorLocation(wall, -100, -350, 20)
-	init_sphere()
+	uetorch.SetActorRotation(wall, 0, 0, 90)
+	initSphere()
 end
 
 return block
