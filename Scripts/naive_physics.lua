@@ -28,31 +28,27 @@ local function dict_to_array(a)
 end
 
 local actors = {}
-local t_last_save = 0
-local t3 = 0
+local tLastSaveScreen = 0
+local tSaveScreen = 0
 local step = 0
 
 local function SaveScreen(dt)
-	t3 = t3 + dt
-
-	if t3 - t_last_save >= config.GetScreenCaptureInterval() then
+	if tSaveScreen - tLastSaveScreen >= config.GetScreenCaptureInterval() then
 		step = step + 1
+
 		local file = config.GetDataPath() .. currentIteration .. '/' .. step .. '_screen.jpg'
 		local i1 = uetorch.Screen()
-
 		if i1 then
 			image.save(file, i1)
 		end
 
 		file = config.GetDataPath() .. currentIteration .. '/' .. step .. '_objseg.jpg'
 		--local i2 = uetorch.ObjectSegmentation(actors, config.GetStride())
-
 		if i2 then
 			image.save(file,i2)
 		end
 
 		--local i3 = uetorch.ObjectMasks(actors, config.GetStride())
-
 		if i3 then
 			actor = 1
 
@@ -63,25 +59,29 @@ local function SaveScreen(dt)
 			end
 		end
 
-		t_last_save = t3
+		tLastSaveScreen = tSaveScreen
 	end
+	tSaveScreen = tSaveScreen + dt
 end
 
 local data = {}
-local t_text = 0
+local tSaveText = 0
+local tLastSaveText = 0
 
 local function SaveTextHook(dt)
-	local aux = {t = t_text}
-	--print(t_text)
-	for k,v in pairs(block.actors) do
-		--print(k,v)
-		aux[k] = {
-			location = uetorch.GetActorLocation(v),
-			rotation = uetorch.GetActorRotation(v)
-		}
+	local aux = {t = tSaveText}
+	if tSaveText - tLastSaveText >= config.GetScreenCaptureInterval() then
+		for k,v in pairs(block.actors) do
+			aux[k] = {
+				location = uetorch.GetActorLocation(v),
+				rotation = uetorch.GetActorRotation(v)
+			}
+		end
+		table.insert(data, aux)
+
+		tLastSaveText = tSaveText
 	end
-	table.insert(data, aux)
-	t_text = t_text + dt
+	tSaveText = tSaveText + dt
 end
 
 function SetCurrentIteration(iteration)
@@ -119,12 +119,13 @@ function SaveData()
 			file:write("actor = " .. k2 .. "\n")
 
 			for k3,v3 in pairs(v[k2]["location"]) do
-				file:write(k3 .. " = " .. v3 .. "\n")
+				file:write(k3 .. " = " .. v3 .. " ")
 			end
-
+			file:write("\n")
 			for k3,v3 in pairs(v[k2]["rotation"]) do
-				file:write(k3 .. " = " .. v3 .. "\n")
+				file:write(k3 .. " = " .. v3 .. " ")
 			end
+			file:write("\n")
 		end
 	end
 
