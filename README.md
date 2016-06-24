@@ -28,6 +28,11 @@ The **config.lua** file gives an easy way to configure the following aspects of 
 
 Each block script independently sets the scenario for the simulation and should provide:
 
-* A **set_block()** function which will be called from the main script.
+* A **SetBlock()** function which will be called from the main script.
 * An **actors** table which contains the actors for which data will be stored.
+* A **IsPossible()** function which says whether the sequence is currently possible.
 
+## Additional utils
+
+* **imageseq_to_video.py** : takes the obtained screen captures and ouputs videos.
+* **clean.sh** : deletes directories which aren't necessary to rebuild the game.
