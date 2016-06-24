@@ -92,7 +92,7 @@ function SetCurrentIteration(iteration)
 
 	block = require(config.GetBlock(currentIteration))
 	actors = dict_to_array(block.actors)
-	block.set_block()
+	block.SetBlock()
 
 	if config.GetSave() then
 		uetorch.AddTickHook(SaveScreen)
@@ -104,6 +104,14 @@ function SaveData()
 	local filename = config.GetDataPath() .. currentIteration .. '/data.txt'
 	local file = assert(io.open(filename, "w"))
 	file:write("block = " .. config.GetBlock(currentIteration) .. "\n")
+
+	local possible = block.IsPossible()
+	if possible then
+		file:write("possible = true\n")
+	else
+		file:write("possible = false\n")
+	end
+	
 	local bounds = uetorch.GetActorBounds(floor)
 	local minx = bounds["x"] - bounds["boxX"]
 	local maxx = bounds["x"] + bounds["boxX"]

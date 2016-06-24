@@ -4,6 +4,7 @@ local block = {}
 local sphere = uetorch.GetActor("Sphere_4")
 local wall = uetorch.GetActor("Wall_400x200_8")
 block.actors = {sphere=sphere, wall=wall}
+local possible = true
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
@@ -43,6 +44,7 @@ local function WallRotationUp(dt)
 			sphere_visible = true
 		else
 			sphere_visible = false
+			possible = false
 		end
 		uetorch.SetActorVisible(sphere, sphere_visible)
 	end
@@ -57,7 +59,7 @@ local function StartDown(dt)
 	end
 end
 
-function block.set_block()
+function block.SetBlock()
 	framesStartDown = math.random(5)
 	framesRemainUp = math.random(5)
 	uetorch.AddTickHook(StartDown)
@@ -66,6 +68,10 @@ function block.set_block()
 	uetorch.SetActorLocation(sphere, 150, -550, 70)
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 	uetorch.SetActorVisible(sphere, sphere_visible)
+end
+
+function block.IsPossible()
+	return possible
 end
 
 return block

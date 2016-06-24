@@ -5,12 +5,13 @@ local sphere = uetorch.GetActor("Sphere_4")
 local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
+local possible = true
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
 local sphere_pos = math.random(2)
 
-local function moveSphere()
+local function MoveSphere()
 	if sphere_pos == 1 then
 		uetorch.SetActorLocation(sphere, -50, -550, 70)
 	else
@@ -50,8 +51,12 @@ local function WallRotationUp(dt)
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
-		sphere_pos = math.random(2)
-		moveSphere()
+		sphere_pos2 = math.random(2)
+		if sphere_pos2 ~= sphere_pos then
+			possible = false
+		end
+		sphere_pos = sphere_pos2
+		MoveSphere()
 	end
 	t_rotation = t_rotation + dt
 end
@@ -64,7 +69,7 @@ local function StartDown(dt)
 	end
 end
 
-function block.set_block()
+function block.SetBlock()
 	framesStartDown = math.random(5)
 	framesRemainUp = math.random(5)
 	uetorch.AddTickHook(StartDown)
@@ -75,7 +80,11 @@ function block.set_block()
 	uetorch.SetActorLocation(wall2, 200, -350, 20)
 	uetorch.SetActorRotation(wall1, 0, 0, 90)
 	uetorch.SetActorRotation(wall2, 0, 0, 90)
-	moveSphere()
+	MoveSphere()
+end
+
+function block.IsPossible()
+	return possible
 end
 
 return block
