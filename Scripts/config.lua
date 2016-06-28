@@ -7,7 +7,8 @@ conf = {
 	sceneTime = {
 		block1a_static = 10.0,
 		block1a_dynamic = 11.0,
-		block1c = 10.0
+		block1c = 10.0,
+		block5a = 7.0
 	},
 	stride = 4,
 	save = true,
@@ -23,6 +24,10 @@ conf = {
 		{
 			iterations = 4,
 			block = 'block1c'
+		},
+		{
+			iterations = 4,
+			block = 'block5a'
 		}
 	}
 	--loadTime = 2.0, -- 1s
