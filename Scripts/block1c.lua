@@ -1,4 +1,5 @@
 local uetorch = require 'uetorch'
+local config = require 'config'
 local block = {}
 
 local sphere = uetorch.GetActor("Sphere_4")
@@ -6,13 +7,15 @@ local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
 local possible = true
+local isHidden
+local decided = false
+local params = {}
+local iterationType
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
-local sphere_pos = math.random(2)
-
 local function MoveSphere()
-	if sphere_pos == 1 then
+	if params.sphere_pos == 1 then
 		uetorch.SetActorLocation(sphere, -50, -550, 70)
 	else
 		uetorch.SetActorLocation(sphere, 320, -550, 70)
@@ -21,8 +24,6 @@ end
 
 local t_rotation = 0
 local t_rotation_change = 0
-local framesStartDown
-local framesRemainUp
 
 local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
@@ -36,8 +37,8 @@ local function WallRotationDown(dt)
 end
 
 local function RemainUp(dt)
-	framesRemainUp = framesRemainUp - 1
-	if framesRemainUp == 0 then
+	params.framesRemainUp = params.framesRemainUp - 1
+	if params.framesRemainUp == 0 then
 		uetorch.RemoveTickHook(RemainUp)
 		uetorch.AddTickHook(WallRotationDown)
 	end
@@ -51,27 +52,71 @@ local function WallRotationUp(dt)
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
-		sphere_pos2 = math.random(2)
-		if sphere_pos2 ~= sphere_pos then
-			possible = false
-		end
-		sphere_pos = sphere_pos2
-		MoveSphere()
 	end
 	t_rotation = t_rotation + dt
 end
 
 local function StartDown(dt)
-	framesStartDown = framesStartDown - 1
-	if framesStartDown == 0 then
+	params.framesStartDown = params.framesStartDown - 1
+	if params.framesStartDown == 0 then
 		uetorch.RemoveTickHook(StartDown)
 		uetorch.AddTickHook(WallRotationUp)
 	end
 end
 
-function block.SetBlock()
-	framesStartDown = math.random(5)
-	framesRemainUp = math.random(5)
+local tCheck, tLastCheck = 0, 0
+local step = 0
+
+local function Dissapear(dt)
+	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
+		step = step + 1
+
+		if not decided and isHidden[step] then
+			decided = true
+			sphere_pos2 = math.random(2)
+			if sphere_pos2 ~= params.sphere_pos then
+				possible = false
+			end
+			params.sphere_pos = sphere_pos2
+			MoveSphere()
+		end
+
+		tLastCheck = tCheck
+	end
+	tCheck = tCheck + dt
+end
+
+function block.SetBlock(currentIteration)
+	iterationType = currentIteration % 2
+	local folderid = math.ceil(currentIteration / 2)
+
+	if iterationType == 0 then
+		local id = "GreenMaterial"
+		local greenMaterialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
+		local greenMaterial = UE.FindObject(Material.Class(), nil, greenMaterialId)
+		uetorch.SetMaterial(sphere, greenMaterial)
+
+		id = "BlackMaterial"
+		local blackMaterialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
+		local blackMaterial = UE.FindObject(Material.Class(), nil, blackMaterialId)
+		uetorch.SetMaterial(wall1, blackMaterial)
+		uetorch.SetMaterial(wall2, blackMaterial)
+
+		params = {
+			framesStartDown = math.random(5),
+			framesRemainUp = math.random(5),
+			sphere_pos = math.random(2)
+		}
+
+		torch.save(config.GetDataPath() .. folderid .. '/params.t7', params)
+	else
+		isHidden = torch.load(config.GetDataPath() .. folderid .. '/hidden.t7')
+		params = torch.load(config.GetDataPath() .. folderid .. '/params.t7')
+		uetorch.AddTickHook(Dissapear)
+	end
+end
+
+function block.RunBlock()
 	uetorch.AddTickHook(StartDown)
 	uetorch.SetActorScale3D(wall1, 0.5, 1, 1)
 	uetorch.SetActorScale3D(wall2, 0.5, 1, 1)

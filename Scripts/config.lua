@@ -64,7 +64,7 @@ function GetIterations()
 		iterations = iterations + v['iterations']
 	end
 	print("iterations =", iterations)
-	return iterations
+	return 2 * iterations
 end
 
 function config.GetSave()
