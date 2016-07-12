@@ -1,14 +1,18 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
+local utils = require 'utils'
 local block = {}
 
 local sphere = uetorch.GetActor("Sphere_4")
 local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
+
+local pos1 = 1
+local pos2 = 1
 local possible = true
+
 local isHidden
-local decided = false
 local params = {}
 
 local iterationId
@@ -16,9 +20,10 @@ local iterationType
 local iterationBlock
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
+local floor = uetorch.GetActor('Floor')
 
-local function MoveSphere()
-	if params.sphere_pos == 1 then
+local function MoveSphere(pos)
+	if pos == 1 then
 		uetorch.SetActorLocation(sphere, -50, -550, 70)
 	else
 		uetorch.SetActorLocation(sphere, 320, -550, 70)
@@ -70,18 +75,13 @@ end
 local tCheck, tLastCheck = 0, 0
 local step = 0
 
-local function Dissapear(dt)
+local function MagicTrick(dt)
 	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
 		step = step + 1
 
 		if not decided and isHidden[step] then
 			decided = true
-			sphere_pos2 = math.random(2)
-			if sphere_pos2 ~= params.sphere_pos then
-				possible = false
-			end
-			params.sphere_pos = sphere_pos2
-			MoveSphere()
+			MoveSphere(pos2)
 		end
 
 		tLastCheck = tCheck
@@ -93,18 +93,12 @@ function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
-		local id = "GreenMaterial"
-		local greenMaterialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
-		local greenMaterial = UE.FindObject(Material.Class(), nil, greenMaterialId)
-		uetorch.SetMaterial(sphere, greenMaterial)
-
-		id = "BlackMaterial"
-		local blackMaterialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
-		local blackMaterial = UE.FindObject(Material.Class(), nil, blackMaterialId)
-		uetorch.SetMaterial(wall1, blackMaterial)
-		uetorch.SetMaterial(wall2, blackMaterial)
+		utils.SetActorMaterial(sphere, "GreenMaterial")
+		utils.SetActorMaterial(wall1, "BlackMaterial")
+		utils.SetActorMaterial(wall2, "BlackMaterial")
 
 		params = {
+			ground = math.random(#utils.ground_materials),
 			framesStartDown = math.random(5),
 			framesRemainUp = math.random(5),
 			sphere_pos = math.random(2)
@@ -114,11 +108,30 @@ function block.SetBlock(currentIteration)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
-		uetorch.AddTickHook(Dissapear)
+		uetorch.AddTickHook(MagicTrick)
+
+		if iterationType == 1 then
+			pos1 = 1
+			pos2 = 1
+			possible = true
+		elseif iterationType == 2 then
+			pos1 = 2
+			pos2 = 2
+			possible = true
+		elseif iterationType == 3 then
+			pos1 = 1
+			pos2 = 2
+			possible = false
+		elseif iterationType == 4 then
+			pos1 = 2
+			pos2 = 1
+			possible = false
+		end
 	end
 end
 
 function block.RunBlock()
+	utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
 	uetorch.AddTickHook(StartDown)
 	uetorch.SetActorScale3D(wall1, 0.5, 1, 1)
 	uetorch.SetActorScale3D(wall2, 0.5, 1, 1)
@@ -127,7 +140,7 @@ function block.RunBlock()
 	uetorch.SetActorLocation(wall2, 200, -350, 20)
 	uetorch.SetActorRotation(wall1, 0, 0, 90)
 	uetorch.SetActorRotation(wall2, 0, 0, 90)
-	MoveSphere()
+	MoveSphere(pos1)
 end
 
 function block.IsPossible()

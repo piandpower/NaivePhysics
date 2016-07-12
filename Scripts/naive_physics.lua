@@ -12,16 +12,6 @@ local iterationId
 local iterationType
 local iterationBlock
 
-local r = math.random(5)
-local ground_materials = {"M_Basic_Floor", "M_Ground_Grass", "M_Ground_Moss", "M_Wood_Floor_Walnut_Polished", "M_Wood_Floor_Walnut_Worn"}
-local floor = uetorch.GetActor('Floor')
-
-local function SetGroundMaterial(id)
-	local materialId = "Material'/Game/StarterContent/Materials/" .. ground_materials[id] .. "." .. ground_materials[id] .. "'"
-	local material = UE.FindObject(Material.Class(), nil, materialId)
-	uetorch.SetMaterial(floor, material)
-end
-
 local function dict_to_array(a)
 	local ret = {}
 	local i = 1
@@ -119,8 +109,6 @@ function SetCurrentIteration(iteration)
 	currentIteration = tonumber(iteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(iteration)
 	print('current iteration :', iteration, iterationId, iterationType, iterationBlock)
-
-	SetGroundMaterial(r)
 
 	block = require(iterationBlock)
 	actors = dict_to_array(block.actors)

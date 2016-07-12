@@ -11,28 +11,28 @@ conf = {
 		block5a = 7.0
 	},
 	tupleSize = {
-		block1a_static = 1,
-		block1a_dynamic = 1,
-		block1c = 1,
-		block5a = 1
+		block1a_static = 4,
+		block1a_dynamic = 4,
+		block1c = 4,
+		block5a = 2
 	},
 	stride = 4,
 	save = true,
 	blocks = {
 		{
-			iterations = 4,
+			iterations = 1,
 			block = 'block1a_static'
 		},
 		{
-			iterations = 4,
+			iterations = 1,
 			block = 'block1a_dynamic'
 		},
 		{
-			iterations = 4,
+			iterations = 1,
 			block = 'block1c'
 		},
 		{
-			iterations = 4,
+			iterations = 3,
 			block = 'block5a'
 		}
 	}
