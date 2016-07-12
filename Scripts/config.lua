@@ -10,6 +10,12 @@ conf = {
 		block1c = 10.0,
 		block5a = 7.0
 	},
+	tupleSize = {
+		block1a_static = 1,
+		block1a_dynamic = 1,
+		block1c = 1,
+		block5a = 1
+	},
 	stride = 4,
 	save = true,
 	blocks = {
@@ -45,10 +51,11 @@ end
 function config.GetSceneTime(iteration)
 	iteration = tonumber(iteration)
 	for k, v in ipairs(conf['blocks']) do
-		if iteration <= v['iterations'] then
+		local cur = v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
+		if iteration <= cur then
 			return conf['sceneTime'][ v['block'] ]
 		end
-		iteration = iteration -  v['iterations']
+		iteration = iteration - cur
 	end
 	print("ERROR: Invalid Iteration")
 	return nil
@@ -61,23 +68,28 @@ end
 function GetIterations()
 	local iterations = 0
 	for k, v in ipairs(conf['blocks']) do
-		iterations = iterations + v['iterations']
+		iterations = iterations + v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
 	end
 	print("iterations =", iterations)
-	return 2 * iterations
+	return iterations
 end
 
 function config.GetSave()
 	return conf['save']
 end
 
-function config.GetBlock(iteration)
+function config.GetIterationInfo(iteration)
 	iteration = tonumber(iteration)
+	local iterationId = 0
 	for k, v in ipairs(conf['blocks']) do
-		if iteration <= v['iterations'] then
-			return v['block']
+		local cur = v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
+		if iteration <= cur then
+			iterationId = iterationId + math.ceil(iteration / (1 + conf['tupleSize'][ v['block'] ]))
+			local iterationType = iteration % (1 + conf['tupleSize'][ v['block'] ])
+			return iterationId, iterationType, v['block']
 		end
-		iteration = iteration -  v['iterations']
+		iteration = iteration - cur
+		iterationId = iterationId + v['iterations']
 	end
 	print("ERROR: Invalid Iteration")
 	return nil

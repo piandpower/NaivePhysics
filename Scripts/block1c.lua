@@ -10,7 +10,10 @@ local possible = true
 local isHidden
 local decided = false
 local params = {}
+
+local iterationId
 local iterationType
+local iterationBlock
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 
@@ -87,8 +90,7 @@ local function Dissapear(dt)
 end
 
 function block.SetBlock(currentIteration)
-	iterationType = currentIteration % 2
-	local folderid = math.ceil(currentIteration / 2)
+	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
 		local id = "GreenMaterial"
@@ -108,10 +110,10 @@ function block.SetBlock(currentIteration)
 			sphere_pos = math.random(2)
 		}
 
-		torch.save(config.GetDataPath() .. folderid .. '/params.t7', params)
+		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 	else
-		isHidden = torch.load(config.GetDataPath() .. folderid .. '/hidden.t7')
-		params = torch.load(config.GetDataPath() .. folderid .. '/params.t7')
+		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
+		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		uetorch.AddTickHook(Dissapear)
 	end
 end
