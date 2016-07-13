@@ -79,6 +79,7 @@ local function SaveStatusToTable(dt)
 	tSaveText = tSaveText + dt
 end
 
+local floor = uetorch.GetActor('Floor')
 local fog = uetorch.GetActor('AtmosphericFog_1')
 local lightsource = uetorch.GetActor('LightSource')
 local skylight = uetorch.GetActor('SkyLight_1')
