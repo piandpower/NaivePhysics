@@ -87,8 +87,8 @@ function block.SetBlock(currentIteration)
 
 		params = {
 			ground = math.random(#utils.ground_materials),
-			framesStartDown = math.random(5),
-			framesRemainUp = math.random(5)
+			framesStartDown = math.random(20),
+			framesRemainUp = math.random(20)
 		}
 
 		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)

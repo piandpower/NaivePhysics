@@ -5,7 +5,7 @@ conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	screenCaptureInterval = 0.125,
 	sceneTime = {
-		block1a_static = 10.0,
+		block1a_static = 12.0,
 		block1a_dynamic = 11.0,
 		block1c = 10.0,
 		block5a = 7.0
@@ -32,7 +32,7 @@ conf = {
 			block = 'block1c'
 		},
 		{
-			iterations = 3,
+			iterations = 1,
 			block = 'block5a'
 		}
 	}
