@@ -6,6 +6,7 @@ local block = {}
 local sphere = uetorch.GetActor("Sphere_4")
 local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
+local wall_boxY
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
 
 local pos1 = 1
@@ -24,9 +25,9 @@ local floor = uetorch.GetActor('Floor')
 
 local function MoveSphere(pos)
 	if pos == 1 then
-		uetorch.SetActorLocation(sphere, -50, -550, 70)
+		uetorch.SetActorLocation(sphere, 50, -550, 70)
 	else
-		uetorch.SetActorLocation(sphere, 320, -550, 70)
+		uetorch.SetActorLocation(sphere, 350, -550, 70)
 	end
 end
 
@@ -37,6 +38,8 @@ local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, angle)
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationDown)
 		t_rotation_change = t_rotation
@@ -56,6 +59,8 @@ local function WallRotationUp(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, 90 - angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, 90 - angle)
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
@@ -101,7 +106,9 @@ function block.SetBlock(currentIteration)
 			ground = math.random(#utils.ground_materials),
 			framesStartDown = math.random(5),
 			framesRemainUp = math.random(5),
-			sphere_pos = math.random(2)
+			sphere_pos = math.random(2),
+			scaleW = 0.5 - 0.1 * math.random(),
+			scaleH = 1 - 0.5 * math.random()
 		}
 
 		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
@@ -133,13 +140,16 @@ end
 function block.RunBlock()
 	utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
 	uetorch.AddTickHook(StartDown)
-	uetorch.SetActorScale3D(wall1, 0.5, 1, 1)
-	uetorch.SetActorScale3D(wall2, 0.5, 1, 1)
 	uetorch.SetActorLocation(camera, 150, 30, 80)
-	uetorch.SetActorLocation(wall1, -100, -350, 20)
-	uetorch.SetActorLocation(wall2, 200, -350, 20)
+
+	uetorch.SetActorScale3D(wall1, params.scaleW, 1, params.scaleH)
+	uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
+	wall_boxY = uetorch.GetActorBounds(wall1)['boxY']
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + wall_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall_boxY)
 	uetorch.SetActorRotation(wall1, 0, 0, 90)
 	uetorch.SetActorRotation(wall2, 0, 0, 90)
+
 	MoveSphere(pos1)
 end
 
