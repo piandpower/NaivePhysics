@@ -89,7 +89,7 @@ function block.SetBlock(currentIteration)
 			ground = math.random(#utils.ground_materials),
 			framesStartDown = math.random(20),
 			framesRemainUp = math.random(20),
-			scaleW = 1,
+			scaleW = 1 - 0.5 * math.random(),
 			scaleH = 1 - 0.5 * math.random()
 		}
 
@@ -124,9 +124,9 @@ function block.RunBlock()
 	uetorch.AddTickHook(StartDown)
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
-	uetorch.SetActorLocation(wall, -100, -350, 20)
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
+	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20)
 
 	uetorch.SetActorLocation(sphere, 150, -550, 70)
 	uetorch.SetActorVisible(sphere, visible1)
