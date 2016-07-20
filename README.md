@@ -21,6 +21,7 @@ The **config.lua** file gives an easy way to configure the following aspects of 
 * Location where the data will be stored (**data_path**)
 * Interval of time between each screen capture (**screenCaptureInterval**)
 * Length of an scene for each different block (**sceneTime**)
+* Number of elements in the tuple for each block (**tupleSize**), which can be useful when you want to generate multiple scenarios with the same parameters.
 * Enable/disable recording of data (**save**)
 * Amount of iterations for each block (**blocks**)
 
@@ -28,9 +29,10 @@ The **config.lua** file gives an easy way to configure the following aspects of 
 
 Each block script independently sets the scenario for the simulation and should provide:
 
-* A **SetBlock()** function which will be called from the main script.
+* A **SetBlock()** function which will be called from the main script and precalculate some parameters or load them if they have been precalculated already.
+* A **RunBlock()** function which will be called from the Lua blueprint in order to start running the scenario.
 * An **actors** table which contains the actors for which data will be stored.
-* A **IsPossible()** function which says whether the sequence is currently possible.
+* A **IsPossible()** function which says whether the sequence is possible.
 
 ## Additional utils
 
