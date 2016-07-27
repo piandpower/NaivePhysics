@@ -1,0 +1,77 @@
+local uetorch = require 'uetorch'
+
+local agent = uetorch.GetActor("ThirdPersonCharacter_C_1")
+local handleComponent
+
+local object = uetorch.GetActor("TargetPoint_1")
+local object2 = uetorch.GetActor("Cube_4")
+local wall = uetorch.GetActor("Wall_400x200_4")
+local wall_boxY
+
+local t_rotation = 0
+
+local function WallRotationDown(dt)
+	local angle = t_rotation * 50
+	uetorch.SetActorRotation(wall, 0, 0, angle)
+	uetorch.SetActorLocation(wall, -220, -140, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+	if angle >= 90 then
+		uetorch.RemoveTickHook(WallRotationDown)
+	end
+	t_rotation = t_rotation + dt
+end
+
+local waitTime = 4
+local waited
+
+local function WaitMoveToLocation(dt)
+	if waited < waitTime then
+		waited = waited + dt
+		local location = uetorch.GetActorLocation(agent)
+		local forward = uetorch.GetActorForwardVector(agent)
+		print("forward vector", forward)
+		uetorch.SetTargetLocation(handleComponent, location.x + 20 * forward.x, location.y + 20 * forward.y, location.z + 20 * forward.z)
+
+		if waited >= waitTime then
+			print("ReleaseComponent", uetorch.ReleaseComponent(agent))
+			uetorch.WakeRigidBody(UETorch.GetActorMeshComponentAsPrimitive(object2))
+			uetorch.RemoveTickHook(WaitMoveToLocation)
+			print("Final location", uetorch.GetActorLocation(object2))
+		end
+	end
+end
+
+local function MoveObject(dt)
+	local locationStart = uetorch.GetActorLocation(agent)
+	local locationEnd = uetorch.GetActorLocation(object2)
+	print(locationEnd)
+	local hit = UETorch.LineTraceMeshComponent(object2, locationStart.x, locationStart.y, locationStart.z, locationEnd.x, locationEnd.y, locationEnd.z)
+	local meshComponent = UETorch.GetActorMeshComponentAsPrimitive(object2)
+	print('GrabComponent', uetorch.GrabComponent(handleComponent, meshComponent, hit.BoneName, hit.x, hit.y, hit.z))
+	print("move to location", uetorch.SimpleMoveToLocation(agent, 0, 200, 0))
+	waited = 0
+	uetorch.AddTickHook(WaitMoveToLocation)
+	uetorch.RemoveTickHook(MoveObject)
+end
+
+local function WaitMoveToActor(dt)
+	if waited < waitTime then
+		waited = waited + dt
+
+		if waited >= waitTime then
+			uetorch.AddTickHook(MoveObject)
+			uetorch.RemoveTickHook(WaitMoveToActor)
+		end
+	end
+end
+
+function MoveToObject()
+	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
+	print("Initial location", uetorch.GetActorLocation(object2))
+	uetorch.AddTickHook(WallRotationDown)
+	handleComponent = UETorch.GetActorPhysicsHandleComponent(agent)
+	print(handleComponent)
+	print("move to actor", uetorch.SimpleMoveToActor(agent, object2))
+	waited = 0
+	uetorch.AddTickHook(WaitMoveToActor)
+end
+
