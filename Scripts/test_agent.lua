@@ -28,14 +28,16 @@ local function WaitMoveToLocation(dt)
 		waited = waited + dt
 		local location = uetorch.GetActorLocation(agent)
 		local forward = uetorch.GetActorForwardVector(agent)
-		print("forward vector", forward)
-		uetorch.SetTargetLocation(handleComponent, location.x + 20 * forward.x, location.y + 20 * forward.y, location.z + 20 * forward.z)
+		local handleDistance = 100
+		local handleX = location.x + handleDistance * forward.x
+		local handleY = location.y + handleDistance * forward.y
+		local handleZ = location.z + handleDistance * forward.z + 40
+		uetorch.SetTargetLocation(handleComponent, handleX, handleY, handleZ)
 
 		if waited >= waitTime then
 			print("ReleaseComponent", uetorch.ReleaseComponent(agent))
 			uetorch.WakeRigidBody(UETorch.GetActorMeshComponentAsPrimitive(object2))
 			uetorch.RemoveTickHook(WaitMoveToLocation)
-			print("Final location", uetorch.GetActorLocation(object2))
 		end
 	end
 end
@@ -43,11 +45,11 @@ end
 local function MoveObject(dt)
 	local locationStart = uetorch.GetActorLocation(agent)
 	local locationEnd = uetorch.GetActorLocation(object2)
-	print(locationEnd)
 	local hit = UETorch.LineTraceMeshComponent(object2, locationStart.x, locationStart.y, locationStart.z, locationEnd.x, locationEnd.y, locationEnd.z)
 	local meshComponent = UETorch.GetActorMeshComponentAsPrimitive(object2)
 	print('GrabComponent', uetorch.GrabComponent(handleComponent, meshComponent, hit.BoneName, hit.x, hit.y, hit.z))
-	print("move to location", uetorch.SimpleMoveToLocation(agent, 0, 200, 0))
+	uetorch.IgnoreCollisionWithPawn(meshComponent)
+	print("move to location", uetorch.SimpleMoveToLocation(agent, 100, 200, 0))
 	waited = 0
 	uetorch.AddTickHook(WaitMoveToLocation)
 	uetorch.RemoveTickHook(MoveObject)
@@ -66,10 +68,8 @@ end
 
 function MoveToObject()
 	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
-	print("Initial location", uetorch.GetActorLocation(object2))
 	uetorch.AddTickHook(WallRotationDown)
 	handleComponent = UETorch.GetActorPhysicsHandleComponent(agent)
-	print(handleComponent)
 	print("move to actor", uetorch.SimpleMoveToActor(agent, object2))
 	waited = 0
 	uetorch.AddTickHook(WaitMoveToActor)
