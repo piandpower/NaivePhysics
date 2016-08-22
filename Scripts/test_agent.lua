@@ -7,6 +7,9 @@ local object = uetorch.GetActor("TargetPoint_1")
 local object2 = uetorch.GetActor("Cube_4")
 local wall = uetorch.GetActor("Wall_400x200_4")
 local wall_boxY
+local hit
+
+uetorch.SetTickDeltaBounds(1/128, 1/128)
 
 local t_rotation = 0
 
@@ -36,8 +39,12 @@ local function WaitMoveToLocation(dt)
 
 		if waited >= waitTime then
 			print("ReleaseComponent", uetorch.ReleaseComponent(agent))
-			uetorch.WakeRigidBody(UETorch.GetActorMeshComponentAsPrimitive(object2))
+			local meshComponent = UETorch.GetActorMeshComponentAsPrimitive(object2)
+			print("GetActorMeshComponentAsPrimitive 2", meshComponent)
+			print("WakeRigidBody", uetorch.WakeRigidBody(meshComponent, hit.BoneName))
 			uetorch.RemoveTickHook(WaitMoveToLocation)
+
+			uetorch.SimpleMoveToActor(agent, wall)
 		end
 	end
 end
@@ -45,8 +52,9 @@ end
 local function MoveObject(dt)
 	local locationStart = uetorch.GetActorLocation(agent)
 	local locationEnd = uetorch.GetActorLocation(object2)
-	local hit = UETorch.LineTraceMeshComponent(object2, locationStart.x, locationStart.y, locationStart.z, locationEnd.x, locationEnd.y, locationEnd.z)
+	hit = UETorch.LineTraceMeshComponent(object2, locationStart.x, locationStart.y, locationStart.z, locationEnd.x, locationEnd.y, locationEnd.z)
 	local meshComponent = UETorch.GetActorMeshComponentAsPrimitive(object2)
+	print("GetActorMeshComponentAsPrimitive 1", meshComponent)
 	print('GrabComponent', uetorch.GrabComponent(handleComponent, meshComponent, hit.BoneName, hit.x, hit.y, hit.z))
 	uetorch.IgnoreCollisionWithPawn(meshComponent)
 	print("move to location", uetorch.SimpleMoveToLocation(agent, 100, 200, 0))
@@ -66,12 +74,18 @@ local function WaitMoveToActor(dt)
 	end
 end
 
-function MoveToObject()
-	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
-	uetorch.AddTickHook(WallRotationDown)
+local function CallMove(dt)
+	print("CallMove", dt)
 	handleComponent = UETorch.GetActorPhysicsHandleComponent(agent)
 	print("move to actor", uetorch.SimpleMoveToActor(agent, object2))
 	waited = 0
 	uetorch.AddTickHook(WaitMoveToActor)
+	uetorch.RemoveTickHook(CallMove)
 end
 
+function BeginPlay()
+	print("call BeginPlay")
+	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
+	uetorch.AddTickHook(WallRotationDown)
+	uetorch.AddTickHook(CallMove)
+end
