@@ -41,7 +41,7 @@ local function WaitMoveToLocation(dt)
 			print("ReleaseComponent", uetorch.ReleaseComponent(agent))
 			local meshComponent = UETorch.GetActorMeshComponentAsPrimitive(object2)
 			print("GetActorMeshComponentAsPrimitive 2", meshComponent)
-			print("WakeRigidBody", uetorch.WakeRigidBody(meshComponent, hit.BoneName))
+			print("WakeRigidBody", uetorch.WakeRigidBody(meshComponent))
 			uetorch.RemoveTickHook(WaitMoveToLocation)
 
 			uetorch.SimpleMoveToActor(agent, wall)
