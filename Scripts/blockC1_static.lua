@@ -146,7 +146,7 @@ function block.RunBlock()
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + wall_boxY)
 
 	uetorch.SetActorLocation(sphere, 150, -550, 70)
-	uetorch.SetActorVisible(sphere, visible1)
+	uetorch.SetActorVisible(spheres[params.index], visible1)
 	if params.n >= 2 then
 		uetorch.SetActorLocation(sphere2, 40,-550, 70)
 	end
