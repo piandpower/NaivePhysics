@@ -3,31 +3,34 @@ local config = require 'config'
 local utils = require 'utils'
 local block = {}
 
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
+local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
 local sphere2 = uetorch.GetActor("Sphere9_4")
 local sphere3 = uetorch.GetActor("Sphere10_7")
 local spheres = {sphere, sphere2, sphere3}
-
 local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {sphere=sphere, wall=wall}
 
-local visible1 = true
-local visible2 = true
-local possible = true
-
-local isHidden
-local params = {}
-
 local iterationId
 local iterationType
 local iterationBlock
+local params = {}
+local isHidden
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
-local floor = uetorch.GetActor('Floor')
+local visible1 = true
+local visible2 = true
+local possible = true
+local trick1 = false
+local trick2 = false
+local canDoTrick2 = false
 
 local t_rotation = 0
 local t_rotation_change = 0
+local cont = 1
+
+local RemainDown
 
 local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
@@ -36,13 +39,22 @@ local function WallRotationDown(dt)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationDown)
 		t_rotation_change = t_rotation
+		if cont == 1 then
+			uetorch.AddTickHook(RemainDown)
+			canDoTrick2 = true
+			cont = 2
+			print("cont = ", cont)
+		end
 	end
 	t_rotation = t_rotation + dt
 end
 
+local framesUp = 0
+
 local function RemainUp(dt)
-	params.framesRemainUp = params.framesRemainUp - 1
-	if params.framesRemainUp == 0 then
+	framesUp = framesUp + 1
+	if framesUp == params.framesRemainUp then
+		framesUp = 0
 		uetorch.RemoveTickHook(RemainUp)
 		uetorch.AddTickHook(WallRotationDown)
 	end
@@ -53,6 +65,7 @@ local function WallRotationUp(dt)
 	uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
+		print("finished WallRotationUp")
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
@@ -60,10 +73,14 @@ local function WallRotationUp(dt)
 	t_rotation = t_rotation + dt
 end
 
-local function StartDown(dt)
-	params.framesStartDown = params.framesStartDown - 1
-	if params.framesStartDown == 0 then
-		uetorch.RemoveTickHook(StartDown)
+local framesDown = 0
+
+RemainDown = function(dt)
+	framesDown = framesDown + 1
+	if framesDown == params.framesStartDown then
+		print("finsihed RemainDown")
+		framesDown = 0
+		uetorch.RemoveTickHook(RemainDown)
 		uetorch.AddTickHook(WallRotationUp)
 	end
 end
@@ -71,13 +88,18 @@ end
 local tCheck, tLastCheck = 0, 0
 local step = 0
 
-local function MagicTrick(dt)
+local function Trick(dt)
 	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
 		step = step + 1
 
-		if not decided and isHidden[step] then
-			decided = true
+		if not trick1 and isHidden[step] then
+			trick1 = true
 			uetorch.SetActorVisible(spheres[params.index], visible2)
+		end
+
+		if trick1 and canDoTrick2 and not trick2 and isHidden[step] then
+			trick2 = true
+			uetorch.SetActorVisible(spheres[params.index], visible1)
 		end
 
 		tLastCheck = tCheck
@@ -113,7 +135,7 @@ function block.SetBlock(currentIteration)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
-		uetorch.AddTickHook(MagicTrick)
+		uetorch.AddTickHook(Trick)
 
 		if iterationType == 1 then
 			visible1 = false
@@ -137,7 +159,7 @@ end
 
 function block.RunBlock()
 	utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
-	uetorch.AddTickHook(StartDown)
+	uetorch.AddTickHook(RemainDown)
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
