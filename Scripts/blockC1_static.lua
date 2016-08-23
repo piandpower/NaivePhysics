@@ -4,6 +4,10 @@ local utils = require 'utils'
 local block = {}
 
 local sphere = uetorch.GetActor("Sphere_4")
+local sphere2 = uetorch.GetActor("Sphere9_4")
+local sphere3 = uetorch.GetActor("Sphere10_7")
+local spheres = {sphere, sphere2, sphere3}
+
 local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {sphere=sphere, wall=wall}
@@ -73,7 +77,7 @@ local function MagicTrick(dt)
 
 		if not decided and isHidden[step] then
 			decided = true
-			uetorch.SetActorVisible(sphere, visible2)
+			uetorch.SetActorVisible(spheres[params.index], visible2)
 		end
 
 		tLastCheck = tCheck
@@ -85,7 +89,6 @@ function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
-		utils.SetActorMaterial(sphere, "GreenMaterial")
 		utils.SetActorMaterial(wall, "BlackMaterial")
 
 		params = {
@@ -93,8 +96,18 @@ function block.SetBlock(currentIteration)
 			framesStartDown = math.random(20),
 			framesRemainUp = math.random(20),
 			scaleW = 1 - 0.5 * math.random(),
-			scaleH = 1 - 0.5 * math.random()
+			scaleH = 1 - 0.5 * math.random(),
+			n = math.random(1,3)
 		}
+
+		params.index = math.random(1, params.n)
+		utils.SetActorMaterial(spheres[params.index], "GreenMaterial")
+
+		for i = 1,3 do
+			if i ~= params.index then
+				uetorch.DestroyActor(spheres[i])
+			end
+		end
 
 		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 	else
@@ -134,6 +147,12 @@ function block.RunBlock()
 
 	uetorch.SetActorLocation(sphere, 150, -550, 70)
 	uetorch.SetActorVisible(sphere, visible1)
+	if params.n >= 2 then
+		uetorch.SetActorLocation(sphere2, 40,-550, 70)
+	end
+	if params.n >= 3 then
+		uetorch.SetActorLocation(sphere3, 260,-550, 70)
+	end
 end
 
 function block.IsPossible()
