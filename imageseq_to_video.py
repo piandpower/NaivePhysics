@@ -2,7 +2,7 @@ import cv2
 
 path = "data/"
 prefix = "screen_"
-width, height = 1128, 555
+width, height = 960, 960
 fps = 24
 
 ndata = 12

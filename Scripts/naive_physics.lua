@@ -4,6 +4,7 @@ local config = require 'config'
 local block
 
 uetorch.SetTickDeltaBounds(1/16, 1/16)
+uetorch.SetResolution(960, 960)
 -- functions called from MainMap_CameraActor_Blueprint
 GetSceneTime = config.GetSceneTime
 RunBlock = nil
