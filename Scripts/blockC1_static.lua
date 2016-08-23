@@ -117,7 +117,7 @@ function block.SetBlock(currentIteration)
 			ground = math.random(#utils.ground_materials),
 			framesStartDown = math.random(20),
 			framesRemainUp = math.random(20),
-			scaleW = 1 - 0.5 * math.random(),
+			scaleW = 1 - 0.4 * math.random(),
 			scaleH = 1 - 0.5 * math.random(),
 			n = math.random(1,3)
 		}
