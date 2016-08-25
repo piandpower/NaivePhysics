@@ -43,7 +43,6 @@ local function WallRotationDown(dt)
 			uetorch.AddTickHook(RemainDown)
 			canDoTrick2 = true
 			cont = 2
-			print("cont = ", cont)
 		end
 	end
 	t_rotation = t_rotation + dt
@@ -65,7 +64,6 @@ local function WallRotationUp(dt)
 	uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
-		print("finished WallRotationUp")
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
@@ -78,7 +76,6 @@ local framesDown = 0
 RemainDown = function(dt)
 	framesDown = framesDown + 1
 	if framesDown == params.framesStartDown then
-		print("finsihed RemainDown")
 		framesDown = 0
 		uetorch.RemoveTickHook(RemainDown)
 		uetorch.AddTickHook(WallRotationUp)
