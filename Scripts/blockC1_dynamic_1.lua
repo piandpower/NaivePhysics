@@ -3,38 +3,42 @@ local config = require 'config'
 local utils = require 'utils'
 local block = {}
 
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
+local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
+local sphere2 = uetorch.GetActor("Sphere9_4")
+local sphere3 = uetorch.GetActor("Sphere10_7")
+local spheres = {sphere, sphere2, sphere3}
 local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {sphere=sphere, wall=wall}
 
-local visible1 = true
-local visible2 = true
-local possible = true
-
-local isVisible
-local params = {}
-
 local iterationId
 local iterationType
 local iterationBlock
+local params = {}
+local isHidden
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
-local floor = uetorch.GetActor('Floor')
+local visible1 = true
+local visible2 = true
+local possible = true
+local trick = false
 
 local function InitSphere()
 	if iterationType ~= 0 then
-		uetorch.SetActorVisible(sphere, visible1)
+		uetorch.SetActorVisible(spheres[params.index], visible1)
 	end
 
-	if params.left == 1 then
-		uetorch.SetActorLocation(sphere, -400, -550, params.sphereZ)
-	else
-		uetorch.SetActorLocation(sphere, 500, -550, params.sphereZ)
-		params.forceX = -params.forceX
-	end
+	for i = 1,3 do
+		if params.left[i] == 1 then
+			uetorch.SetActorLocation(spheres[i], -400, -550 - 100 * (i - 1), params.sphereZ[i])
+		else
+			uetorch.SetActorLocation(spheres[i], 500, -550 - 100 * (i - 1), params.sphereZ[i])
+			params.forceX[i] = -params.forceX[i]
+		end
 
-	uetorch.AddForce(sphere, params.forceX, params.forceY, params.signZ * params.forceZ)
+		uetorch.AddForce(spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
+	end
 end
 
 local t_rotation = 0
@@ -82,13 +86,13 @@ end
 local tCheck, tLastCheck = 0, 0
 local step = 0
 
-local function MagicTrick(dt)
+local function Trick(dt)
 	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
 		step = step + 1
 
-		if not decided and isHidden[step] then
-			decided = true
-			uetorch.SetActorVisible(sphere, visible2)
+		if step > 6 and not trick and isHidden[step] then
+			trick = true
+			uetorch.SetActorVisible(spheres[params.index], visible2)
 		end
 
 		tLastCheck = tCheck
@@ -100,28 +104,57 @@ function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
-		utils.SetActorMaterial(sphere, "GreenMaterial")
 		utils.SetActorMaterial(wall, "BlackMaterial")
 
 		params = {
 			ground = math.random(#utils.ground_materials),
-			sphereZ = 70 + math.random(200),
-			forceX = math.random(800000, 1100000),
-			forceY = 0,
-			forceZ = math.random(800000, 1000000),
-			signZ = 2 * math.random(2) - 3,
-			left = math.random(0,1),
+			sphereZ = {
+				70 + math.random(200),
+				70 + math.random(200),
+				70 + math.random(200)
+			},
+			forceX = {
+				math.random(800000, 1100000),
+				math.random(800000, 1100000),
+				math.random(800000, 1100000)
+			},
+			forceY = {0, 0, 0},
+			forceZ = {
+				math.random(800000, 1000000),
+				math.random(800000, 1000000),
+				math.random(800000, 1000000)
+			},
+			signZ = {
+				2 * math.random(2) - 3,
+				2 * math.random(2) - 3,
+				2 * math.random(2) - 3
+			},
+			left = {
+				math.random(0,1),
+				math.random(0,1),
+				math.random(0,1)
+			},
 			framesStartDown = math.random(5),
 			framesRemainUp = math.random(5),
-			scaleW = 1 - 0.5 * math.random(),
-			scaleH = 1 - 0.5 * math.random()
+			scaleW = 0.5,--0 - 0.5 * math.random(),
+			scaleH = 1 - 0.5 * math.random(),
+			n = math.random(1,3),
 		}
+
+		params.index = math.random(1, params.n)
+		utils.SetActorMaterial(sphere, "GreenMaterial")
+
+		for i = 1,3 do
+			if i ~= params.index then
+				uetorch.DestroyActor(spheres[i])
+			end
+		end
 
 		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
-		uetorch.AddTickHook(MagicTrick)
+		uetorch.AddTickHook(Trick)
 
 		if iterationType == 1 then
 			visible1 = false
@@ -145,7 +178,7 @@ end
 
 function block.RunBlock()
 	utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
-	uetorch.AddTickHook(WallRotationUp)
+	uetorch.AddTickHook(StartDown)
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
