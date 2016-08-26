@@ -30,10 +30,11 @@ local function InitSphere()
 	end
 
 	for i = 1,3 do
+		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
 		if params.left[i] == 1 then
-			uetorch.SetActorLocation(spheres[i], -400, -550 - 100 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], -400, -350 - 100 * (i - 1), params.sphereZ[i])
 		else
-			uetorch.SetActorLocation(spheres[i], 500, -550 - 100 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], 500, -350 - 100 * (i - 1), params.sphereZ[i])
 			params.forceX[i] = -params.forceX[i]
 		end
 
@@ -47,7 +48,7 @@ local t_rotation_change = 0
 local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
 	uetorch.SetActorRotation(wall, 0, 0, angle)
-	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationDown)
 		t_rotation_change = t_rotation
@@ -66,7 +67,7 @@ end
 local function WallRotationUp(dt)
 	local angle = (t_rotation - t_rotation_change) * 20
 	uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
-	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
 		uetorch.RemoveTickHook(WallRotationUp)
 		uetorch.AddTickHook(RemainUp)
@@ -90,7 +91,7 @@ local function Trick(dt)
 	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
 		step = step + 1
 
-		if step > 6 and not trick and isHidden[step] then
+		if not trick and isHidden[step] then
 			trick = true
 			uetorch.SetActorVisible(spheres[params.index], visible2)
 		end
@@ -106,42 +107,48 @@ function block.SetBlock(currentIteration)
 	if iterationType == 0 then
 		utils.SetActorMaterial(wall, "BlackMaterial")
 
-		params = {
-			ground = math.random(#utils.ground_materials),
-			sphereZ = {
-				70 + math.random(200),
-				70 + math.random(200),
-				70 + math.random(200)
-			},
-			forceX = {
-				math.random(800000, 1100000),
-				math.random(800000, 1100000),
-				math.random(800000, 1100000)
-			},
-			forceY = {0, 0, 0},
-			forceZ = {
-				math.random(800000, 1000000),
-				math.random(800000, 1000000),
-				math.random(800000, 1000000)
-			},
-			signZ = {
-				2 * math.random(2) - 3,
-				2 * math.random(2) - 3,
-				2 * math.random(2) - 3
-			},
-			left = {
-				math.random(0,1),
-				math.random(0,1),
-				math.random(0,1)
-			},
-			framesStartDown = math.random(5),
-			framesRemainUp = math.random(5),
-			scaleW = 0.5,--0 - 0.5 * math.random(),
-			scaleH = 1 - 0.5 * math.random(),
-			n = math.random(1,3),
-		}
+		if config.GetLoadParams() then
+			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+		else
+			params = {
+				ground = math.random(#utils.ground_materials),
+				sphereZ = {
+					70 + math.random(200),
+					70 + math.random(200),
+					70 + math.random(200)
+				},
+				forceX = {
+					math.random(800000, 1100000),
+					math.random(800000, 1100000),
+					math.random(800000, 1100000)
+				},
+				forceY = {0, 0, 0},
+				forceZ = {
+					math.random(800000, 1000000),
+					math.random(800000, 1000000),
+					math.random(800000, 1000000)
+				},
+				signZ = {
+					2 * math.random(2) - 3,
+					2 * math.random(2) - 3,
+					2 * math.random(2) - 3
+				},
+				left = {
+					math.random(0,1),
+					math.random(0,1),
+					math.random(0,1)
+				},
+				framesStartDown = math.random(5),
+				framesRemainUp = math.random(5),
+				scaleW = 0.5,--0 - 0.5 * math.random(),
+				scaleH = 1 - 0.5 * math.random(),
+				n = 3--math.random(1,3),
+			}
 
-		params.index = math.random(1, params.n)
+			params.index = 3--math.random(1, params.n)
+			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
+		end
+
 		utils.SetActorMaterial(sphere, "GreenMaterial")
 
 		for i = 1,3 do
@@ -149,8 +156,6 @@ function block.SetBlock(currentIteration)
 				uetorch.DestroyActor(spheres[i])
 			end
 		end
-
-		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
@@ -183,7 +188,7 @@ function block.RunBlock()
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
 	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
-	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + wall_boxY)
+	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + wall_boxY)
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 
 	InitSphere()

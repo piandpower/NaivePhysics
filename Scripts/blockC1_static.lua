@@ -110,16 +110,22 @@ function block.SetBlock(currentIteration)
 	if iterationType == 0 then
 		utils.SetActorMaterial(wall, "BlackMaterial")
 
-		params = {
-			ground = math.random(#utils.ground_materials),
-			framesStartDown = math.random(20),
-			framesRemainUp = math.random(20),
-			scaleW = 1 - 0.4 * math.random(),
-			scaleH = 1 - 0.5 * math.random(),
-			n = math.random(1,3)
-		}
+		if config.GetLoadParams() then
+			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+		else
+			params = {
+				ground = math.random(#utils.ground_materials),
+				framesStartDown = math.random(20),
+				framesRemainUp = math.random(20),
+				scaleW = 1 - 0.4 * math.random(),
+				scaleH = 1 - 0.5 * math.random(),
+				n = math.random(1,3)
+			}
 
-		params.index = math.random(1, params.n)
+			params.index = math.random(1, params.n)
+			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
+		end
+
 		utils.SetActorMaterial(spheres[params.index], "GreenMaterial")
 
 		for i = 1,3 do
@@ -127,8 +133,6 @@ function block.SetBlock(currentIteration)
 				uetorch.DestroyActor(spheres[i])
 			end
 		end
-
-		torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
