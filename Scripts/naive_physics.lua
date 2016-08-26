@@ -5,6 +5,7 @@ local block
 
 uetorch.SetTickDeltaBounds(1/16, 1/16)
 uetorch.SetResolution(960, 960)
+
 -- functions called from MainMap_CameraActor_Blueprint
 GetSceneTime = config.GetSceneTime
 RunBlock = nil
@@ -101,6 +102,21 @@ local function CheckVisibility(dt)
 			hidden = false
 		end
 
+		local mask = torch.ByteTensor(img:size(2), img:size(3))
+
+		for i = 1,img:size(2) do
+			for j = 1,img:size(3) do
+				if math.max(img[1][i][j], img[2][i][j], img[3][i][j]) > 0.0236 then
+					mask[i][j] = 1
+				else
+					mask[i][j] = 0
+				end
+			end
+		end
+
+		local file = config.GetDataPath() .. iterationId .. '/visibility_' .. step .. '_' .. iterationType .. '.jpg'
+		image.save(file, mask)
+
 		table.insert(isHidden, hidden)
 		tLastCheck = tCheck
 	end
@@ -135,6 +151,46 @@ end
 
 function SaveData()
 	if iterationType == 0 then
+		local nHidden = #isHidden
+		local deleted_front = 0
+		local deleted_back = 0
+
+		for k = 1,nHidden do
+			if not isHidden[k] then
+				break
+			else
+				isHidden[k] = false
+				deleted_front = deleted_front + 1
+			end
+		end
+
+		for k = nHidden,1,-1 do
+			if not isHidden[k] then
+				break
+			else
+				isHidden[k] = false
+				deleted_back = deleted_back + 1
+			end
+		end
+
+		local fileHidden = assert(io.open(config.GetDataPath() .. iterationId .. '/hidden.txt', "w"))
+		local found = false
+		for k = 1,nHidden do
+			if isHidden[k] then
+				found = true
+				break
+			end
+		end
+
+		if found then
+			fileHidden:write("found hidden\n")
+		else
+			fileHidden:write("didn't find hidden\n")
+		end
+		fileHidden:write("deleted front = " .. deleted_front .. "\n")
+		fileHidden:write("deleted back = " .. deleted_back .. "\n")
+
+		fileHidden:close()
 		torch.save(config.GetDataPath() .. iterationId .. '/hidden.t7', isHidden)
 	end
 
