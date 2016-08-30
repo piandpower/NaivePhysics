@@ -32,9 +32,9 @@ local function InitSphere()
 	for i = 1,3 do
 		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
 		if params.left[i] == 1 then
-			uetorch.SetActorLocation(spheres[i], -400, -350 - 100 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], -400, -350 - 120 * (i - 1), params.sphereZ[i])
 		else
-			uetorch.SetActorLocation(spheres[i], 500, -350 - 100 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], 500, -350 - 120 * (i - 1), params.sphereZ[i])
 			params.forceX[i] = -params.forceX[i]
 		end
 
@@ -101,12 +101,16 @@ local function Trick(dt)
 	tCheck = tCheck + dt
 end
 
+local mainActor
+
+function block.MainActor()
+	return mainActor
+end
+
 function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
-		utils.SetActorMaterial(wall, "BlackMaterial")
-
 		if config.GetLoadParams() then
 			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		else
@@ -142,14 +146,12 @@ function block.SetBlock(currentIteration)
 				framesRemainUp = math.random(5),
 				scaleW = 0.5,--0 - 0.5 * math.random(),
 				scaleH = 1 - 0.5 * math.random(),
-				n = 3--math.random(1,3),
+				n = math.random(1,3),
 			}
 
-			params.index = 3--math.random(1, params.n)
+			params.index = math.random(1, params.n)
 			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 		end
-
-		utils.SetActorMaterial(sphere, "GreenMaterial")
 
 		for i = 1,3 do
 			if i ~= params.index then
@@ -179,6 +181,8 @@ function block.SetBlock(currentIteration)
 			possible = false
 		end
 	end
+
+	mainActor = spheres[params.index]
 end
 
 function block.RunBlock()
