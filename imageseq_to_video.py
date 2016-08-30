@@ -2,9 +2,7 @@ import cv2
 
 path = "data/"
 prefix = "screen_"
-width, height = 960, 960
 fps = 24
-
 ndata = 12
 
 for i in range(1,1 + ndata):
@@ -17,6 +15,7 @@ for i in range(1,1 + ndata):
 		if img is None:
 			break
 
+		width, height = img.shape[1], img.shape[0]
 		video = cv2.VideoWriter(path + '/video_' + str(i) + "_" + str(tuple_pos) + '.avi', cv2.cv.CV_FOURCC('M','J','P','G'), fps, (width,height))
 		pos = 1
 
