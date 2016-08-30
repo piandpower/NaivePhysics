@@ -104,12 +104,16 @@ local function Trick(dt)
 	tCheck = tCheck + dt
 end
 
+local mainActor
+
+function block.MainActor()
+	return mainActor
+end
+
 function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
 	if iterationType == 0 then
-		utils.SetActorMaterial(wall, "BlackMaterial")
-
 		if config.GetLoadParams() then
 			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		else
@@ -125,8 +129,6 @@ function block.SetBlock(currentIteration)
 			params.index = math.random(1, params.n)
 			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 		end
-
-		utils.SetActorMaterial(spheres[params.index], "GreenMaterial")
 
 		for i = 1,3 do
 			if i ~= params.index then
@@ -156,6 +158,8 @@ function block.SetBlock(currentIteration)
 			possible = false
 		end
 	end
+
+	mainActor = spheres[params.index]
 end
 
 function block.RunBlock()
