@@ -1,31 +1,31 @@
 local config = {}
 
 conf = {
-	--seed = 0,
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
+	loadParams = true,
 	screenCaptureInterval = 0.125,
 	sceneTime = {
-		block1a_static = 12.0,
-		block1a_dynamic = 11.0,
+		blockC1_static = 25.0,
+		blockC1_dynamic_1 = 15.0,
 		block1c = 10.0,
 		block5a = 7.0
 	},
 	tupleSize = {
-		block1a_static = 4,
-		block1a_dynamic = 4,
-		block1c = 4,
-		block5a = 2
+		blockC1_static = 1 + 4,
+		blockC1_dynamic_1 = 1 + 4,
+		block1c = 1 + 4,
+		block5a = 1 + 2
 	},
-	stride = 4,
+	stride = 1,
 	save = true,
 	blocks = {
 		{
 			iterations = 1,
-			block = 'block1a_static'
+			block = 'blockC1_static'
 		},
 		{
 			iterations = 1,
-			block = 'block1a_dynamic'
+			block = 'blockC1_dynamic_1'
 		},
 		{
 			iterations = 1,
@@ -36,8 +36,6 @@ conf = {
 			block = 'block5a'
 		}
 	}
-	--loadTime = 2.0, -- 1s
-	--resolution = 'nil', -- this gets interpreted by the blueprints as NULL, but you can still override
 }
 
 function config.GetDataPath()
@@ -51,7 +49,7 @@ end
 function config.GetSceneTime(iteration)
 	iteration = tonumber(iteration)
 	for k, v in ipairs(conf['blocks']) do
-		local cur = v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
+		local cur = v['iterations'] * (conf['tupleSize'][ v['block'] ])
 		if iteration <= cur then
 			return conf['sceneTime'][ v['block'] ]
 		end
@@ -68,7 +66,7 @@ end
 function GetIterations()
 	local iterations = 0
 	for k, v in ipairs(conf['blocks']) do
-		iterations = iterations + v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
+		iterations = iterations + v['iterations'] * (conf['tupleSize'][ v['block'] ])
 	end
 	print("iterations =", iterations)
 	return iterations
@@ -78,14 +76,18 @@ function config.GetSave()
 	return conf['save']
 end
 
+function config.GetLoadParams()
+	return conf['loadParams']
+end
+
 function config.GetIterationInfo(iteration)
 	iteration = tonumber(iteration)
 	local iterationId = 0
 	for k, v in ipairs(conf['blocks']) do
-		local cur = v['iterations'] * (1 + conf['tupleSize'][ v['block'] ])
+		local cur = v['iterations'] * (conf['tupleSize'][ v['block'] ])
 		if iteration <= cur then
-			iterationId = iterationId + math.ceil(iteration / (1 + conf['tupleSize'][ v['block'] ]))
-			local iterationType = iteration % (1 + conf['tupleSize'][ v['block'] ])
+			iterationId = iterationId + math.ceil(iteration / (conf['tupleSize'][ v['block'] ]))
+			local iterationType = iteration % (conf['tupleSize'][ v['block'] ])
 			return iterationId, iterationType, v['block']
 		end
 		iteration = iteration - cur
