@@ -136,7 +136,7 @@ function block.SetBlock(currentIteration)
 			end
 		end
 	else
-		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
+		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_0.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		uetorch.AddTickHook(Trick)
 

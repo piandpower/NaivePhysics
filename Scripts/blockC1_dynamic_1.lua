@@ -29,12 +29,12 @@ local function InitSphere()
 		uetorch.SetActorVisible(spheres[params.index], visible1)
 	end
 
-	for i = 1,3 do
+	for i = 1,params.n do
 		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
 		if params.left[i] == 1 then
-			uetorch.SetActorLocation(spheres[i], -400, -350 - 120 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
 		else
-			uetorch.SetActorLocation(spheres[i], 500, -350 - 120 * (i - 1), params.sphereZ[i])
+			uetorch.SetActorLocation(spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
 			params.forceX[i] = -params.forceX[i]
 		end
 
@@ -159,7 +159,7 @@ function block.SetBlock(currentIteration)
 			end
 		end
 	else
-		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
+		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_0.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		uetorch.AddTickHook(Trick)
 

@@ -108,7 +108,7 @@ function SetCurrentIteration(iteration)
 		return block.RunBlock()
 	end
 
-	if iterationType == 0 then
+	if config.IsVisibilityCheck(iterationBlock, iterationType) then
 		uetorch.AddTickHook(CheckVisibility)
 	elseif config.GetSave() then
 		uetorch.AddTickHook(SaveScreen)
@@ -117,7 +117,7 @@ function SetCurrentIteration(iteration)
 end
 
 function SaveData()
-	if iterationType == 0 then
+	if config.IsVisibilityCheck(iterationBlock, iterationType) then
 		local nHidden = #isHidden
 		local deleted_front = 0
 		local deleted_back = 0
@@ -140,7 +140,7 @@ function SaveData()
 			end
 		end
 
-		local fileHidden = assert(io.open(config.GetDataPath() .. iterationId .. '/hidden.txt', "w"))
+		local fileHidden = assert(io.open(config.GetDataPath() .. iterationId .. '/check_hidden_' .. iterationType .. '.txt', "w"))
 		local found = false
 		for k = 1,nHidden do
 			if isHidden[k] then
@@ -158,7 +158,7 @@ function SaveData()
 		fileHidden:write("deleted back = " .. deleted_back .. "\n")
 
 		fileHidden:close()
-		torch.save(config.GetDataPath() .. iterationId .. '/hidden.t7', isHidden)
+		torch.save(config.GetDataPath() .. iterationId .. '/hidden_' .. iterationType .. '.t7', isHidden)
 	else
 		local filename = config.GetDataPath() .. iterationId .. '/data_' .. iterationType .. '.txt'
 		local file = assert(io.open(filename, "w"))
