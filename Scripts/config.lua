@@ -2,19 +2,28 @@ local config = {}
 
 conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
-	loadParams = true,
+	loadParams = false,
 	screenCaptureInterval = 0.125,
 	sceneTime = {
 		blockC1_static = 25.0,
 		blockC1_dynamic_1 = 15.0,
+		blockC1_dynamic_2 = 15.0,
 		block1c = 10.0,
 		block5a = 7.0
 	},
+	visibilityCheckSize = {
+		blockC1_static = 1,
+		blockC1_dynamic_1 = 1,
+		blockC1_dynamic_2 = 2,
+		block1c = 1,
+		block5a = 1
+	},
 	tupleSize = {
-		blockC1_static = 1 + 4,
-		blockC1_dynamic_1 = 1 + 4,
-		block1c = 1 + 4,
-		block5a = 1 + 2
+		blockC1_static = 4,
+		blockC1_dynamic_1 = 4,
+		blockC1_dynamic_2 = 4,
+		block1c = 4,
+		block5a = 2
 	},
 	stride = 1,
 	save = true,
@@ -29,10 +38,14 @@ conf = {
 		},
 		{
 			iterations = 1,
+			block = 'blockC1_dynamic_2'
+		},
+		{
+			iterations = 0,
 			block = 'block1c'
 		},
 		{
-			iterations = 1,
+			iterations = 0,
 			block = 'block5a'
 		}
 	}
@@ -49,10 +62,13 @@ end
 function config.GetSceneTime(iteration)
 	iteration = tonumber(iteration)
 	for k, v in ipairs(conf['blocks']) do
-		local cur = v['iterations'] * (conf['tupleSize'][ v['block'] ])
+		local block = v['block']
+		local cur = v['iterations'] * (conf['tupleSize'][block] + conf['visibilityCheckSize'][block])
+
 		if iteration <= cur then
-			return conf['sceneTime'][ v['block'] ]
+			return conf['sceneTime'][block]
 		end
+
 		iteration = iteration - cur
 	end
 	print("ERROR: Invalid Iteration")
@@ -66,7 +82,8 @@ end
 function GetIterations()
 	local iterations = 0
 	for k, v in ipairs(conf['blocks']) do
-		iterations = iterations + v['iterations'] * (conf['tupleSize'][ v['block'] ])
+		local block = v['block']
+		iterations = iterations + v['iterations'] * (conf['tupleSize'][block] + conf['visibilityCheckSize'][block])
 	end
 	print("iterations =", iterations)
 	return iterations
@@ -84,17 +101,29 @@ function config.GetIterationInfo(iteration)
 	iteration = tonumber(iteration)
 	local iterationId = 0
 	for k, v in ipairs(conf['blocks']) do
-		local cur = v['iterations'] * (conf['tupleSize'][ v['block'] ])
+		local block = v['block']
+		local block_len = conf['tupleSize'][block] + conf['visibilityCheckSize'][block]
+		local cur = v['iterations'] * block_len
+
 		if iteration <= cur then
-			iterationId = iterationId + math.ceil(iteration / (conf['tupleSize'][ v['block'] ]))
-			local iterationType = iteration % (conf['tupleSize'][ v['block'] ])
-			return iterationId, iterationType, v['block']
+			iterationId = iterationId + math.ceil(iteration / block_len)
+			local iterationType = iteration % block_len
+			return iterationId, iterationType, block
 		end
+
 		iteration = iteration - cur
 		iterationId = iterationId + v['iterations']
 	end
 	print("ERROR: Invalid Iteration")
 	return nil
+end
+
+function config.IsVisibilityCheck(block, iterationType)
+	if iterationType == 0 or iterationType > conf['tupleSize'][block] then
+		return true
+	else
+		return false
+	end
 end
 
 return config
