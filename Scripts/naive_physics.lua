@@ -1,30 +1,24 @@
 local uetorch = require 'uetorch'
 local image = require 'image'
 local config = require 'config'
+local utils = require 'utils'
 local block
 
-uetorch.SetTickDeltaBounds(1/16, 1/16)
-uetorch.SetResolution(480, 480)
+uetorch.SetTickDeltaBounds(1/8, 1/8)
+--uetorch.SetResolution(480, 480)
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetSceneTime = config.GetSceneTime
+GetCurrentIteration = utils.GetCurrentIteration
 RunBlock = nil
+
+-- replace uetorch's Tick function
+Tick = utils.Tick
 
 local iterationId
 local iterationType
 local iterationBlock
 
-local function dict_to_array(a)
-	local ret = {}
-	local i = 1
-	for k, v in pairs(a) do
-		ret[i] = v
-		i = i + 1
-	end
-	return ret
-end
-
-local actors = {}
 local tLastSaveScreen = 0
 local tSaveScreen = 0
 local step = 0
@@ -64,11 +58,6 @@ local function SaveStatusToTable(dt)
 	tSaveText = tSaveText + dt
 end
 
-local floor = uetorch.GetActor('Floor')
-local fog = uetorch.GetActor('AtmosphericFog_1')
-local lightsource = uetorch.GetActor('LightSource')
-local skylight = uetorch.GetActor('SkyLight_1')
-
 local tCheck, tLastCheck = 0, 0
 local step = 0
 local hidden = false
@@ -77,7 +66,7 @@ local isHidden = {}
 local function CheckVisibility(dt)
 	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
 		step = step + 1
-		local file = config.GetDataPath() .. iterationId .. '/screen_' .. step .. '_' .. iterationType .. '.jpg'
+		local file = config.GetDataPath() .. iterationId .. '/screenv_' .. step .. '_' .. iterationType .. '.jpg'
 		local i2 = uetorch.ObjectSegmentation({block.MainActor()}, config.GetStride())
 
 		if i2 then
@@ -96,24 +85,26 @@ local function CheckVisibility(dt)
 	tCheck = tCheck + dt
 end
 
-function SetCurrentIteration(iteration)
-	currentIteration = tonumber(iteration)
-	iterationId, iterationType, iterationBlock = config.GetIterationInfo(iteration)
-	print('current iteration :', iteration, iterationId, iterationType, iterationBlock)
+function SetCurrentIteration()
+	local currentIteration = utils.GetCurrentIteration()
+	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+	print('current iteration :', currentIteration, iterationId, iterationType, iterationBlock)
 
 	block = require(iterationBlock)
-	actors = dict_to_array(block.actors)
 	block.SetBlock(currentIteration)
 	RunBlock = function()
 		return block.RunBlock()
 	end
 
+	utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
 	if config.IsVisibilityCheck(iterationBlock, iterationType) then
-		uetorch.AddTickHook(CheckVisibility)
-	elseif config.GetSave() then
-		uetorch.AddTickHook(SaveScreen)
-		uetorch.AddTickHook(SaveStatusToTable)
+		utils.AddTickHook(CheckVisibility)
+	else
+		utils.AddTickHook(SaveScreen)
 	end
+	utils.AddTickHook(SaveStatusToTable)
+	utils.AddTickHook(block.SaveCheckInfo)
+	utils.AddEndTickHook(block.Check)
 end
 
 function SaveData()
@@ -171,6 +162,7 @@ function SaveData()
 			file:write("possible = false\n")
 		end
 
+		local floor = uetorch.GetActor('Floor')
 		local bounds = uetorch.GetActorBounds(floor)
 		local minx = bounds["x"] - bounds["boxX"]
 		local maxx = bounds["x"] + bounds["boxX"]

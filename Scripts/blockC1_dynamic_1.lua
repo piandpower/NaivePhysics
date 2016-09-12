@@ -3,7 +3,7 @@ local config = require 'config'
 local utils = require 'utils'
 local block = {}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
+local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
 local sphere2 = uetorch.GetActor("Sphere9_4")
@@ -46,11 +46,11 @@ local t_rotation = 0
 local t_rotation_change = 0
 
 local function WallRotationDown(dt)
-	local angle = (t_rotation - t_rotation_change) * 20
+	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	uetorch.SetActorRotation(wall, 0, 0, angle)
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
-		uetorch.RemoveTickHook(WallRotationDown)
+		utils.RemoveTickHook(WallRotationDown)
 		t_rotation_change = t_rotation
 	end
 	t_rotation = t_rotation + dt
@@ -59,18 +59,18 @@ end
 local function RemainUp(dt)
 	params.framesRemainUp = params.framesRemainUp - 1
 	if params.framesRemainUp == 0 then
-		uetorch.RemoveTickHook(RemainUp)
-		uetorch.AddTickHook(WallRotationDown)
+		utils.RemoveTickHook(RemainUp)
+		utils.AddTickHook(WallRotationDown)
 	end
 end
 
 local function WallRotationUp(dt)
-	local angle = (t_rotation - t_rotation_change) * 20
+	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
 	if angle >= 90 then
-		uetorch.RemoveTickHook(WallRotationUp)
-		uetorch.AddTickHook(RemainUp)
+		utils.RemoveTickHook(WallRotationUp)
+		utils.AddTickHook(RemainUp)
 		t_rotation_change = t_rotation
 	end
 	t_rotation = t_rotation + dt
@@ -79,8 +79,8 @@ end
 local function StartDown(dt)
 	params.framesStartDown = params.framesStartDown - 1
 	if params.framesStartDown == 0 then
-		uetorch.RemoveTickHook(StartDown)
-		uetorch.AddTickHook(WallRotationUp)
+		utils.RemoveTickHook(StartDown)
+		utils.AddTickHook(WallRotationUp)
 	end
 end
 
@@ -109,6 +109,9 @@ end
 
 function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+	local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+	file:write(currentIteration .. ", " .. iterationId .. ", " .. iterationType .. ", " .. iterationBlock .. "\n")
+	file:close()
 
 	if iterationType == 0 then
 		if config.GetLoadParams() then
@@ -161,7 +164,7 @@ function block.SetBlock(currentIteration)
 	else
 		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_0.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
-		uetorch.AddTickHook(Trick)
+		utils.AddTickHook(Trick)
 
 		if iterationType == 1 then
 			visible1 = false
@@ -187,7 +190,7 @@ end
 
 function block.RunBlock()
 	utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
-	uetorch.AddTickHook(StartDown)
+	utils.AddTickHook(StartDown)
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
@@ -196,6 +199,77 @@ function block.RunBlock()
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 
 	InitSphere()
+end
+
+local checkData = {}
+local saveTick = 1
+
+function block.SaveCheckInfo(dt)
+	local aux = {}
+	aux.location = uetorch.GetActorLocation(mainActor)
+	aux.rotation = uetorch.GetActorRotation(mainActor)
+	table.insert(checkData, aux)
+	saveTick = saveTick + 1
+end
+
+local maxDiff = 1e-6
+
+function block.Check()
+	local status = true
+	torch.save(config.GetDataPath() .. iterationId .. '/check_' .. iterationType .. '.t7', checkData)
+
+	if iterationType == 1 then
+		print("Run iteration Check")
+
+		local foundHidden = false
+
+		for i = 1,#isHidden do
+			if isHidden[i] then
+				foundHidden = true
+			end
+		end
+
+		if not foundHidden then
+			status = false
+		end
+
+		local iteration = utils.GetCurrentIteration()
+		local size = config.GetBlockSize(iterationBlock)
+		local ticks = config.GetBlockTicks(iterationBlock)
+		local allData = {}
+
+		for i = 0,size - 1 do
+			local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
+			table.insert(allData, aux)
+		end
+
+		for t = 1,ticks do
+			for i = 2,size do
+				-- check location values
+				if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
+					status = false
+				end
+				if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
+					status = false
+				end
+				if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
+					status = false
+				end
+				-- check rotation values
+				if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
+					status = false
+				end
+				if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
+					status = false
+				end
+				if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
+					status = false
+				end
+			end
+		end
+	end
+
+	utils.UpdateIterationsCounter(status)
 end
 
 function block.IsPossible()
