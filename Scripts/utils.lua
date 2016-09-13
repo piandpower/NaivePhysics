@@ -22,8 +22,10 @@ function utils.UpdateIterationsCounter(check)
 	if check then
 		iteration = iteration - 1
 	else
-		iteration = iteration + config.GetBlockSize(iterationBlock)
-		print("Iteration check fails")
+		iteration = iteration + config.GetBlockSize(iterationBlock) - 1
+		local file = io.open(config.GetDataPath() .. 'output.txt', "a")
+		file:write("Iteration check fails\n")
+		file:close()
 	end
 
 	torch.save(conf.dataPath .. 'iterations.t7', iteration)
@@ -61,7 +63,6 @@ end
 local tickCount = 1
 
 function utils.Tick(dt)
-	print("naive physics Tick " .. tickCount)
 	tickCount = tickCount + 1
 	dt = 1
 	if TicksRemaining then
