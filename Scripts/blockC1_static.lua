@@ -86,7 +86,7 @@ local tCheck, tLastCheck = 0, 0
 local step = 0
 
 local function Trick(dt)
-	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
+	if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 
 		if not trick1 and isHidden[step] then

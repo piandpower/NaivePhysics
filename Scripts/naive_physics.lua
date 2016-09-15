@@ -8,7 +8,6 @@ uetorch.SetTickDeltaBounds(1/8, 1/8)
 --uetorch.SetResolution(480, 480)
 
 -- functions called from MainMap_CameraActor_Blueprint
-GetSceneTime = config.GetSceneTime
 GetCurrentIteration = utils.GetCurrentIteration
 RunBlock = nil
 
@@ -24,7 +23,7 @@ local tSaveScreen = 0
 local step = 0
 
 local function SaveScreen(dt)
-	if tSaveScreen - tLastSaveScreen >= config.GetScreenCaptureInterval() then
+	if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 
 		local file = config.GetDataPath() .. iterationId .. '/screen_' .. step .. '_' .. iterationType .. '.jpg'
@@ -44,7 +43,7 @@ local tLastSaveText = 0
 
 local function SaveStatusToTable(dt)
 	local aux = {t = tSaveText}
-	if tSaveText - tLastSaveText >= config.GetScreenCaptureInterval() then
+	if tSaveText - tLastSaveText >= config.GetBlockCaptureInterval(iterationBlock) then
 		for k,v in pairs(block.actors) do
 			aux[k] = {
 				location = uetorch.GetActorLocation(v),
@@ -64,7 +63,7 @@ local hidden = false
 local isHidden = {}
 
 local function CheckVisibility(dt)
-	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
+	if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 		local file = config.GetDataPath() .. iterationId .. '/screenv_' .. step .. '_' .. iterationType .. '.jpg'
 		local i2 = uetorch.ObjectSegmentation({block.MainActor()}, config.GetStride())
@@ -85,29 +84,7 @@ local function CheckVisibility(dt)
 	tCheck = tCheck + dt
 end
 
-function SetCurrentIteration()
-	local currentIteration = utils.GetCurrentIteration()
-	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
-	print('current iteration :', currentIteration, iterationId, iterationType, iterationBlock)
-
-	block = require(iterationBlock)
-	block.SetBlock(currentIteration)
-	RunBlock = function()
-		return block.RunBlock()
-	end
-
-	utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
-	if config.IsVisibilityCheck(iterationBlock, iterationType) then
-		utils.AddTickHook(CheckVisibility)
-	else
-		utils.AddTickHook(SaveScreen)
-	end
-	utils.AddTickHook(SaveStatusToTable)
-	utils.AddTickHook(block.SaveCheckInfo)
-	utils.AddEndTickHook(block.Check)
-end
-
-function SaveData()
+local function SaveData()
 	if config.IsVisibilityCheck(iterationBlock, iterationType) then
 		local nHidden = #isHidden
 		local deleted_front = 0
@@ -185,4 +162,27 @@ function SaveData()
 
 		file:close()
 	end
+end
+
+function SetCurrentIteration()
+	local currentIteration = utils.GetCurrentIteration()
+	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+	print('current iteration :', currentIteration, iterationId, iterationType, iterationBlock)
+
+	block = require(iterationBlock)
+	block.SetBlock(currentIteration)
+	RunBlock = function()
+		return block.RunBlock()
+	end
+
+	utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
+	if config.IsVisibilityCheck(iterationBlock, iterationType) then
+		utils.AddTickHook(CheckVisibility)
+	else
+		utils.AddTickHook(SaveScreen)
+	end
+	utils.AddTickHook(SaveStatusToTable)
+	utils.AddTickHook(block.SaveCheckInfo)
+	utils.AddEndTickHook(block.Check)
+	utils.AddEndTickHook(SaveData)
 end

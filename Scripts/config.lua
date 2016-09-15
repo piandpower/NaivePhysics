@@ -3,13 +3,9 @@ local config = {}
 conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	loadParams = false,
-	screenCaptureInterval = 2,
-	sceneTime = {
-		blockC1_static = 25.0,
-		blockC1_dynamic_1 = 15.0,
-		blockC1_dynamic_2 = 15.0,
-		block1c = 10.0,
-		block5a = 7.0
+	captureInterval = {
+		blockC1_static = 3,
+		blockC1_dynamic_1 = 2,
 	},
 	sceneTicks = {
 		blockC1_static = 200,
@@ -59,24 +55,8 @@ function config.GetDataPath()
 	return conf['dataPath']
 end
 
-function config.GetScreenCaptureInterval()
-	return conf['screenCaptureInterval']
-end
-
-function config.GetSceneTime()
-	local iteration = torch.load(conf.dataPath .. 'iterations.t7')
-	for k, v in ipairs(conf['blocks']) do
-		local block = v['block']
-		local cur = v['iterations'] * (conf['tupleSize'][block] + conf['visibilityCheckSize'][block])
-
-		if iteration <= cur then
-			return conf['sceneTime'][block]
-		end
-
-		iteration = iteration - cur
-	end
-	print("ERROR: Invalid Iteration")
-	return nil
+function config.GetBlockCaptureInterval(block)
+	return conf.captureInterval[block]
 end
 
 function config.GetBlockTicks(block)

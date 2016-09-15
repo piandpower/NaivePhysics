@@ -88,7 +88,7 @@ local tCheck, tLastCheck = 0, 0
 local step = 0
 
 local function Trick(dt)
-	if tCheck - tLastCheck >= config.GetScreenCaptureInterval() then
+	if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 
 		if not trick and isHidden[step] then
@@ -151,7 +151,6 @@ function block.SetBlock(currentIteration)
 				scaleH = 1 - 0.5 * math.random(),
 				n = math.random(1,3),
 			}
-
 			params.index = math.random(1, params.n)
 			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 		end

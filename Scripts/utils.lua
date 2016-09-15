@@ -72,6 +72,7 @@ function utils.Tick(dt)
 			for ii, hook in ipairs(EndTickHooks) do
 				hook()
 			end
+			uetorch.ExecuteConsoleCommand("RestartLevel")
 		else
 			for ii, hook in ipairs(TickHooks) do
 				hook(dt)
