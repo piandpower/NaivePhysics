@@ -3,6 +3,9 @@ local config = {}
 conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	loadParams = false,
+	save = true,
+	stitch = false,
+	stride = 1,
 	captureInterval = {
 		blockC1_static = 3,
 		blockC1_dynamic_1 = 2,
@@ -25,8 +28,6 @@ conf = {
 		block1c = 4,
 		block5a = 2
 	},
-	stride = 1,
-	save = true,
 	blocks = {
 		{
 			iterations = 1,
@@ -51,8 +52,36 @@ conf = {
 	}
 }
 
+function SetIterationsCounter()
+	local iterations = 0
+	for k, v in ipairs(conf.blocks) do
+		local block = v.block
+		iterations = iterations + v.iterations * (conf.tupleSize[block] + conf.visibilityCheckSize[block])
+	end
+	print("iterations = " .. iterations)
+	local file = conf.dataPath .. 'iterations.t7'
+	torch.save(file, iterations)
+	return iterations
+end
+
 function config.GetDataPath()
-	return conf['dataPath']
+	return conf.dataPath
+end
+
+function config.GetLoadParams()
+	return conf.loadParams
+end
+
+function config.GetSave()
+	return conf.save
+end
+
+function config.GetStitch()
+	return conf.stitch
+end
+
+function config.GetStride()
+	return conf.stride
 end
 
 function config.GetBlockCaptureInterval(block)
@@ -63,37 +92,13 @@ function config.GetBlockTicks(block)
 	return conf.sceneTicks[block]
 end
 
-function config.GetStride()
-	return conf['stride']
-end
-
-function SetIterationsCounter()
-	local iterations = 0
-	for k, v in ipairs(conf['blocks']) do
-		local block = v['block']
-		iterations = iterations + v['iterations'] * (conf['tupleSize'][block] + conf['visibilityCheckSize'][block])
-	end
-	print("iterations =", iterations)
-	local file = conf.dataPath .. 'iterations.t7'
-	torch.save(file, iterations)
-	return iterations
-end
-
-function config.GetSave()
-	return conf['save']
-end
-
-function config.GetLoadParams()
-	return conf['loadParams']
-end
-
 function config.GetIterationInfo(iteration)
 	iteration = tonumber(iteration)
 	local iterationId = 0
-	for k, v in ipairs(conf['blocks']) do
-		local block = v['block']
-		local block_len = conf['tupleSize'][block] + conf['visibilityCheckSize'][block]
-		local cur = v['iterations'] * block_len
+	for k, v in ipairs(conf.blocks) do
+		local block = v.block
+		local block_len = conf.tupleSize[block] + conf.visibilityCheckSize[block]
+		local cur = v.iterations * block_len
 
 		if iteration <= cur then
 			iterationId = iterationId + math.ceil(iteration / block_len)
@@ -102,7 +107,7 @@ function config.GetIterationInfo(iteration)
 		end
 
 		iteration = iteration - cur
-		iterationId = iterationId + v['iterations']
+		iterationId = iterationId + v.iterations
 	end
 	print("ERROR: Invalid Iteration")
 	return nil
@@ -116,7 +121,7 @@ function config.IsVisibilityCheck(block, iterationType)
 	if conf.visibilityCheckSize[block] == 0 then
 		return false
 	end
-	if iterationType == 0 or iterationType > conf['tupleSize'][block] then
+	if iterationType == 0 or iterationType > conf.tupleSize[block] then
 		return true
 	else
 		return false

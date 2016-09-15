@@ -18,6 +18,7 @@ local iterationId
 local iterationType
 local iterationBlock
 
+local screenTable = {}
 local tLastSaveScreen = 0
 local tSaveScreen = 0
 local step = 0
@@ -28,8 +29,13 @@ local function SaveScreen(dt)
 
 		local file = config.GetDataPath() .. iterationId .. '/screen_' .. step .. '_' .. iterationType .. '.jpg'
 		local i1 = uetorch.Screen()
-		if i1 then
-			image.save(file, i1)
+
+		if config.GetStitch() then
+			table.insert(screenTable, i1)
+		else
+			if i1 then
+				image.save(file, i1)
+			end
 		end
 
 		tLastSaveScreen = tSaveScreen
@@ -57,6 +63,7 @@ local function SaveStatusToTable(dt)
 	tSaveText = tSaveText + dt
 end
 
+local visibilityTable = {}
 local tCheck, tLastCheck = 0, 0
 local step = 0
 local hidden = false
@@ -66,10 +73,15 @@ local function CheckVisibility(dt)
 	if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 		local file = config.GetDataPath() .. iterationId .. '/screenv_' .. step .. '_' .. iterationType .. '.jpg'
-		local i2 = uetorch.ObjectSegmentation({block.MainActor()}, config.GetStride())
+		local actors = {block.MainActor()}
+		local i2 = uetorch.ObjectSegmentation(actors, config.GetStride())
 
 		if i2 then
-			image.save(file,i2)
+			if config.GetStitch() then
+				table.insert(visibilityTable, i2)
+			else
+				image.save(file, i2)
+			end
 
 			if torch.max(i2) == 0 then
 				hidden = true
@@ -164,6 +176,32 @@ local function SaveData()
 	end
 end
 
+local function SaveStitchedImages()
+	if config.IsVisibilityCheck(iterationBlock, iterationType) then
+		local filename = config.GetDataPath() .. iterationId .. '/screenv_' .. iterationType .. '.jpg'
+		local height = visibilityTable[1]:size(1)
+		local width = visibilityTable[1]:size(2)
+		local result = torch.IntTensor(height * #visibilityTable, width)
+
+		for k,v in ipairs(visibilityTable) do
+			local aux = result:narrow(1, 1 + (k - 1) * height, height)
+			aux:copy(v)
+		end
+		image.save(filename, result)
+	else
+		local filename = config.GetDataPath() .. iterationId .. '/screen_' .. iterationType .. '.jpg'
+		local height = screenTable[1]:size(2)
+		local width = screenTable[1]:size(3)
+		local result = torch.Tensor(3, height * #screenTable, width)
+
+		for k,v in ipairs(screenTable) do
+			local aux = result:narrow(2, 1 + (k - 1) * height, height)
+			aux:copy(v)
+		end
+		image.save(filename, result)
+	end
+end
+
 function SetCurrentIteration()
 	local currentIteration = utils.GetCurrentIteration()
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
@@ -185,4 +223,7 @@ function SetCurrentIteration()
 	utils.AddTickHook(block.SaveCheckInfo)
 	utils.AddEndTickHook(block.Check)
 	utils.AddEndTickHook(SaveData)
+	if config.GetStitch() then
+		utils.AddEndTickHook(SaveStitchedImages)
+	end
 end
