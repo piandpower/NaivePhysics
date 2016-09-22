@@ -13,9 +13,7 @@ local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {wall=wall}
 
-local iterationId
-local iterationType
-local iterationBlock
+local iterationId,iterationType,iterationBlock
 local params = {}
 local isHidden
 

@@ -13,9 +13,7 @@ local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {wall=wall}
 
-local iterationId
-local iterationType
-local iterationBlock
+local iterationId,iterationType,iterationBlock
 local params = {}
 local isHidden
 
@@ -182,9 +180,7 @@ function block.RunBlock()
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + wall_boxY)
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 
-	if iterationType ~= 0 then
-		uetorch.SetActorVisible(spheres[params.index], visible1)
-	end
+	uetorch.SetActorVisible(spheres[params.index], visible1)
 
 	for i = 1,params.n do
 		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)

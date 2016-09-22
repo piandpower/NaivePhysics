@@ -14,9 +14,7 @@ RunBlock = nil
 -- replace uetorch's Tick function
 Tick = utils.Tick
 
-local iterationId
-local iterationType
-local iterationBlock
+local iterationId,iterationType,iterationBlock
 
 local screenTable = {}
 local tLastSaveScreen = 0
