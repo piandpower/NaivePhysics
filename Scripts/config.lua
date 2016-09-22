@@ -3,7 +3,6 @@ local config = {}
 conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	loadParams = false,
-	save = true,
 	stitch = false,
 	stride = 1,
 	captureInterval = {
@@ -70,10 +69,6 @@ end
 
 function config.GetLoadParams()
 	return conf.loadParams
-end
-
-function config.GetSave()
-	return conf.save
 end
 
 function config.GetStitch()
