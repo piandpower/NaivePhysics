@@ -99,15 +99,12 @@ end
 local function SaveData()
 	if config.IsVisibilityCheck(iterationBlock, iterationType) then
 		local nHidden = #isHidden
-		local deleted_front = 0
-		local deleted_back = 0
 
 		for k = 1,nHidden do
 			if not isHidden[k] then
 				break
 			else
 				isHidden[k] = false
-				deleted_front = deleted_front + 1
 			end
 		end
 
@@ -116,28 +113,9 @@ local function SaveData()
 				break
 			else
 				isHidden[k] = false
-				deleted_back = deleted_back + 1
 			end
 		end
 
-		local fileHidden = assert(io.open(config.GetDataPath() .. iterationId .. '/check_hidden_' .. iterationType .. '.txt', "w"))
-		local found = false
-		for k = 1,nHidden do
-			if isHidden[k] then
-				found = true
-				break
-			end
-		end
-
-		if found then
-			fileHidden:write("found hidden\n")
-		else
-			fileHidden:write("didn't find hidden\n")
-		end
-		fileHidden:write("deleted front = " .. deleted_front .. "\n")
-		fileHidden:write("deleted back = " .. deleted_back .. "\n")
-
-		fileHidden:close()
 		torch.save(config.GetDataPath() .. iterationId .. '/hidden_' .. iterationType .. '.t7', isHidden)
 	else
 		local filename = config.GetDataPath() .. iterationId .. '/data_' .. iterationType .. '.txt'
