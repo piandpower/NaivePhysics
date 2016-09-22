@@ -5,7 +5,7 @@ local utils = require 'utils'
 local block
 
 uetorch.SetTickDeltaBounds(1/8, 1/8)
---uetorch.SetResolution(480, 480)
+uetorch.SetResolution(512, 288) -- keep the 16:9 proportion
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
