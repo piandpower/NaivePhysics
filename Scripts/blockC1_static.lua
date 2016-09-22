@@ -11,7 +11,7 @@ local sphere3 = uetorch.GetActor("Sphere10_7")
 local spheres = {sphere, sphere2, sphere3}
 local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
-block.actors = {sphere=sphere, wall=wall}
+block.actors = {wall=wall}
 
 local iterationId
 local iterationType
@@ -163,6 +163,9 @@ function block.SetBlock(currentIteration)
 	end
 
 	mainActor = spheres[params.index]
+	for i = 1,params.n do
+		block.actors['sphere' .. i] = spheres[i]
+	end
 end
 
 function block.RunBlock()
@@ -171,7 +174,7 @@ function block.RunBlock()
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
-	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
+	wall_boxY = uetorch.GetActorBounds(wall).boxY
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + wall_boxY)
 

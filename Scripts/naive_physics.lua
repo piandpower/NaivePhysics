@@ -137,6 +137,12 @@ local function SaveData()
 		local maxy = bounds["y"] + bounds["boxY"]
 		file:write("minX = " .. minx .. " maxX = " .. maxx .. " minY = " .. miny .. " maxY = " .. maxy .. "\n")
 
+		local nactors = 0
+		for k,v in pairs(block.actors) do
+			nactors = nactors + 1
+		end
+		file:write("number of actors = " .. nactors .. "\n")
+
 		for k, v in ipairs(data) do
 			file:write("step = " .. k .. "\n")
 			file:write("t = " .. v["t"] .. "\n")

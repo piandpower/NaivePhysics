@@ -11,7 +11,7 @@ local sphere3 = uetorch.GetActor("Sphere10_7")
 local spheres = {sphere, sphere2, sphere3}
 local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
-block.actors = {sphere=sphere, wall=wall}
+block.actors = {wall=wall}
 
 local iterationId
 local iterationType
@@ -23,24 +23,6 @@ local visible1 = true
 local visible2 = true
 local possible = true
 local trick = false
-
-local function InitSphere()
-	if iterationType ~= 0 then
-		uetorch.SetActorVisible(spheres[params.index], visible1)
-	end
-
-	for i = 1,params.n do
-		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
-		if params.left[i] == 1 then
-			uetorch.SetActorLocation(spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
-		else
-			uetorch.SetActorLocation(spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
-			params.forceX[i] = -params.forceX[i]
-		end
-
-		uetorch.AddForce(spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
-	end
-end
 
 local t_rotation = 0
 local t_rotation_change = 0
@@ -185,6 +167,9 @@ function block.SetBlock(currentIteration)
 	end
 
 	mainActor = spheres[params.index]
+	for i = 1,params.n do
+		block.actors['sphere' .. i] = spheres[i]
+	end
 end
 
 function block.RunBlock()
@@ -193,11 +178,25 @@ function block.RunBlock()
 	uetorch.SetActorLocation(camera, 100, 30, 80)
 
 	uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
-	wall_boxY = uetorch.GetActorBounds(wall)['boxY']
+	wall_boxY = uetorch.GetActorBounds(wall).boxY
 	uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + wall_boxY)
 	uetorch.SetActorRotation(wall, 0, 0, 90)
 
-	InitSphere()
+	if iterationType ~= 0 then
+		uetorch.SetActorVisible(spheres[params.index], visible1)
+	end
+
+	for i = 1,params.n do
+		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
+		if params.left[i] == 1 then
+			uetorch.SetActorLocation(spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
+		else
+			uetorch.SetActorLocation(spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
+			params.forceX[i] = -params.forceX[i]
+		end
+
+		uetorch.AddForce(spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
+	end
 end
 
 local checkData = {}
