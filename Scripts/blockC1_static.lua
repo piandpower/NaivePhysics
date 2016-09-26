@@ -137,7 +137,7 @@ function block.SetBlock(currentIteration)
 			end
 		end
 	else
-		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_0.t7')
+		isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_5.t7')
 		params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		utils.AddTickHook(Trick)
 
@@ -224,9 +224,9 @@ function block.Check()
 			local ticks = config.GetBlockTicks(iterationBlock)
 			local allData = {}
 
-			for i = 0,size - 1 do
+			for i = 1,size do
 				local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
-				table.insert(allData, aux)
+				allData[i] = aux
 			end
 
 			for t = 1,ticks do

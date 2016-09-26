@@ -15,6 +15,11 @@ function utils.GetCurrentIteration()
 	return iteration
 end
 
+local function GetFirstIterationInBlock(iteration)
+	local iterationId, iterationType, block = config.GetIterationInfo(iteration)
+	return iteration + config.GetBlockSize(block) - iterationType
+end
+
 function utils.UpdateIterationsCounter(check)
 	local iteration = utils.GetCurrentIteration()
 	local iterationId, iterationType, iterationBlock = config.GetIterationInfo(iteration)
@@ -22,7 +27,7 @@ function utils.UpdateIterationsCounter(check)
 	if check then
 		iteration = iteration - 1
 	else
-		iteration = iteration + config.GetBlockSize(iterationBlock) - 1
+		iteration = GetFirstIterationInBlock(iteration)
 	end
 
 	torch.save(conf.dataPath .. 'iterations.t7', iteration)

@@ -203,8 +203,8 @@ function SetCurrentIteration()
 	end
 	utils.AddTickHook(SaveStatusToTable)
 	utils.AddTickHook(block.SaveCheckInfo)
-	utils.AddEndTickHook(block.Check)
 	utils.AddEndTickHook(SaveData)
+	utils.AddEndTickHook(block.Check)
 	if config.GetStitch() then
 		utils.AddEndTickHook(SaveStitchedImages)
 	end

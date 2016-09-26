@@ -136,7 +136,7 @@ function block.SetBlock(currentIteration)
 		if iterationType == 5 then
 			uetorch.DestroyActor(wall1)
 		else
-			isHidden1 = torch.load(config.GetDataPath() .. iterationId .. '/hidden_0.t7')
+			isHidden1 = torch.load(config.GetDataPath() .. iterationId .. '/hidden_6.t7')
 			isHidden2 = torch.load(config.GetDataPath() .. iterationId .. '/hidden_5.t7')
 			utils.AddTickHook(Trick)
 
@@ -204,83 +204,78 @@ local maxDiff = 1e-6
 function block.Check()
 	local status = true
 	torch.save(config.GetDataPath() .. iterationId .. '/check_' .. iterationType .. '.t7', checkData)
+	local file = io.open(config.GetDataPath() .. 'output.txt', "a")
 
-	if iterationType == 1 then
-		local file = io.open(config.GetDataPath() .. 'output.txt', "a")
-
-		local foundHidden1 = false
+	if iterationType == 6 then
+		local isHidden1 = torch.load(config.GetDataPath() .. iterationId .. '/hidden_6.t7')
+		local foundHidden = false
 		for i = 1,#isHidden1 do
 			if isHidden1[i] then
-				foundHidden1 = true
+				foundHidden = true
 			end
 		end
 
-		local foundHidden2 = false
-		for i = 1,#isHidden2 do
-			if isHidden2[i] then
-				foundHidden2 = true
-			end
-		end
-
-		if not foundHidden1 or not foundHidden2 then
-			if not foundHidden1 then
-				file:write("Iteration check failed on condition 1: not hidden in case 1\n")
-			end
-			if not foundHidden2 then
-				file:write("Iteration check failed on condition 1: not hidden in case 2\n")
-			end
+		if not foundHidden then
+			file:write("Iteration check failed on condition 1: not hidden in visibility check 1\n")
 			status = false
 		end
-
-		if status then
-			local iteration = utils.GetCurrentIteration()
-			local size = config.GetBlockSize(iterationBlock)
-			local ticks = config.GetBlockTicks(iterationBlock)
-			local allData = {}
-
-			for i = 0,size - 1 do
-				local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
-				table.insert(allData, aux)
-			end
-
-			for t = 1,ticks do
-				for i = 2,size do
-					-- check location values
-					if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
-						status = false
-					end
-					if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
-						status = false
-					end
-					if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
-						status = false
-					end
-					-- check rotation values
-					if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
-						status = false
-					end
-					if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
-						status = false
-					end
-					if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
-						status = false
-					end
-				end
-			end
-
-			if not status then
-				file:write("Iteration check failed on condition 2\n")
-			end
-		end
-
-		if status then
-			file:write("Iteration check succeeded\n")
-		else
-			file:write("Iteration check failed\n")
-		end
-		file:close()
 	end
 
+	if iterationType == 5 then
+		local isHidden2 = torch.load(config.GetDataPath() .. iterationId .. '/hidden_5.t7')
+		local foundHidden = false
+		for i = 1,#isHidden2 do
+			if isHidden2[i] then
+				foundHidden = true
+			end
+		end
+
+		if not foundHidden then
+			file:write("Iteration check failed on condition 1: not hidden in visibility check 2\n")
+			status = false
+		end
+	end
+
+	if iterationType < 6 and status then
+		local iteration = utils.GetCurrentIteration()
+		local ticks = config.GetBlockTicks(iterationBlock)
+		local prevData = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. (iterationType + 1) .. '.t7')
+
+		for t = 1,ticks do
+			-- check location values
+			if(math.abs(checkData[t].location.x - prevData[t].location.x) > maxDiff) then
+				status = false
+			end
+			if(math.abs(checkData[t].location.y - prevData[t].location.y) > maxDiff) then
+				status = false
+			end
+			if(math.abs(checkData[t].location.z - prevData[t].location.z) > maxDiff) then
+				status = false
+			end
+			-- check rotation values
+			if(math.abs(checkData[t].rotation.pitch - prevData[t].rotation.pitch) > maxDiff) then
+				status = false
+			end
+			if(math.abs(checkData[t].rotation.yaw - prevData[t].rotation.yaw) > maxDiff) then
+				status = false
+			end
+			if(math.abs(checkData[t].rotation.roll - prevData[t].rotation.roll) > maxDiff) then
+				status = false
+			end
+		end
+
+		if not status then
+			file:write("Iteration check failed on condition 2\n")
+		end
+	end
+
+	if not status then
+		file:write("Iteration check failed\n")
+	elseif iterationType == 1 then
+		file:write("Iteration check succeeded\n")
+	end
+
+	file:close()
 	utils.UpdateIterationsCounter(status)
 end
 
