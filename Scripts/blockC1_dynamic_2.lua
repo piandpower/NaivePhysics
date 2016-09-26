@@ -102,6 +102,9 @@ end
 
 function block.SetBlock(currentIteration)
 	iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+	local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+	file:write(currentIteration .. ", " .. iterationId .. ", " .. iterationType .. ", " .. iterationBlock .. "\n")
+	file:close()
 
 	if iterationType == 0 then
 		if config.GetLoadParams() then
@@ -110,7 +113,7 @@ function block.SetBlock(currentIteration)
 			params = {
 				ground = 1,--math.random(#utils.ground_materials),
 				sphereZ = 200,--70 + math.random(200),
-				forceX = 2000000,--2500000,--math.random(800000, 1100000),
+				forceX = 1600000,
 				forceY = 0,
 				forceZ = math.random(800000, 1000000),
 				signZ = 1,--2 * math.random(2) - 3,
@@ -203,12 +206,12 @@ function block.Check()
 	torch.save(config.GetDataPath() .. iterationId .. '/check_' .. iterationType .. '.t7', checkData)
 
 	if iterationType == 1 then
-		print("Run iteration Check")
+		local file = io.open(config.GetDataPath() .. 'output.txt', "a")
 
 		local foundHidden1 = false
 		for i = 1,#isHidden1 do
 			if isHidden1[i] then
-				foundHidden = true
+				foundHidden1 = true
 			end
 		end
 
@@ -220,43 +223,62 @@ function block.Check()
 		end
 
 		if not foundHidden1 or not foundHidden2 then
+			if not foundHidden1 then
+				file:write("Iteration check failed on condition 1: not hidden in case 1\n")
+			end
+			if not foundHidden2 then
+				file:write("Iteration check failed on condition 1: not hidden in case 2\n")
+			end
 			status = false
 		end
 
-		local iteration = utils.GetCurrentIteration()
-		local size = config.GetBlockSize(iterationBlock)
-		local ticks = config.GetBlockTicks(iterationBlock)
-		local allData = {}
+		if status then
+			local iteration = utils.GetCurrentIteration()
+			local size = config.GetBlockSize(iterationBlock)
+			local ticks = config.GetBlockTicks(iterationBlock)
+			local allData = {}
 
-		for i = 0,size - 1 do
-			local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
-			table.insert(allData, aux)
-		end
+			for i = 0,size - 1 do
+				local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
+				table.insert(allData, aux)
+			end
 
-		for t = 1,ticks do
-			for i = 2,size do
-				-- check location values
-				if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
-					status = false
-				end
-				-- check rotation values
-				if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
-					status = false
+			for t = 1,ticks do
+				for i = 2,size do
+					-- check location values
+					if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
+						status = false
+					end
+					-- check rotation values
+					if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
+						status = false
+					end
 				end
 			end
+
+			if not status then
+				file:write("Iteration check failed on condition 2\n")
+			end
 		end
+
+		if status then
+			file:write("Iteration check succeeded\n")
+		else
+			file:write("Iteration check failed\n")
+		end
+		file:close()
 	end
 
 	utils.UpdateIterationsCounter(status)

@@ -23,9 +23,6 @@ function utils.UpdateIterationsCounter(check)
 		iteration = iteration - 1
 	else
 		iteration = iteration + config.GetBlockSize(iterationBlock) - 1
-		local file = io.open(config.GetDataPath() .. 'output.txt', "a")
-		file:write("Iteration check fails\n")
-		file:close()
 	end
 
 	torch.save(conf.dataPath .. 'iterations.t7', iteration)
@@ -61,6 +58,7 @@ function utils.SetTicksRemaining(ticks)
 end
 
 local tickCount = 1
+local foundError = false
 
 function utils.Tick(dt)
 	tickCount = tickCount + 1
@@ -78,7 +76,8 @@ function utils.Tick(dt)
 				hook(dt)
 			end
 		end
-	else
+	elseif not foundError then
+		foundError = true
 		print("no TicksRemaining")
 	end
 end

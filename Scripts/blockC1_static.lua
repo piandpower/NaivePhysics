@@ -204,10 +204,9 @@ function block.Check()
 	torch.save(config.GetDataPath() .. iterationId .. '/check_' .. iterationType .. '.t7', checkData)
 
 	if iterationType == 1 then
-		print("Run iteration Check")
+		local file = io.open(config.GetDataPath() .. 'output.txt', "a")
 
 		local foundHidden = false
-
 		for i = 1,#isHidden do
 			if isHidden[i] then
 				foundHidden = true
@@ -215,43 +214,57 @@ function block.Check()
 		end
 
 		if not foundHidden then
+			file:write("Iteration check failed on condition 1\n")
 			status = false
 		end
 
-		local iteration = utils.GetCurrentIteration()
-		local size = config.GetBlockSize(iterationBlock)
-		local ticks = config.GetBlockTicks(iterationBlock)
-		local allData = {}
+		if status then
+			local iteration = utils.GetCurrentIteration()
+			local size = config.GetBlockSize(iterationBlock)
+			local ticks = config.GetBlockTicks(iterationBlock)
+			local allData = {}
 
-		for i = 0,size - 1 do
-			local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
-			table.insert(allData, aux)
-		end
+			for i = 0,size - 1 do
+				local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
+				table.insert(allData, aux)
+			end
 
-		for t = 1,ticks do
-			for i = 2,size do
-				-- check location values
-				if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
-					status = false
-				end
-				-- check rotation values
-				if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
-					status = false
-				end
-				if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
-					status = false
+			for t = 1,ticks do
+				for i = 2,size do
+					-- check location values
+					if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
+						status = false
+					end
+					-- check rotation values
+					if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
+						status = false
+					end
+					if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
+						status = false
+					end
 				end
 			end
+
+			if not status then
+				file:write("Iteration check failed on condition 2\n")
+			end
 		end
+
+		if status then
+			file:write("Iteration check succeeded\n")
+		else
+			file:write("Iteration check failed\n")
+		end
+		file:close()
 	end
 
 	utils.UpdateIterationsCounter(status)
