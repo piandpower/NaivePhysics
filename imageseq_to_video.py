@@ -6,7 +6,7 @@ fps = 24
 ndata = 12
 
 for i in range(1,1 + ndata):
-	tuple_pos = 0
+	tuple_pos = 1
 
 	while True:
 		name = path + str(i) + "/" + prefix + "1_" + str(tuple_pos) + ".jpg"

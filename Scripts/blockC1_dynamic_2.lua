@@ -106,7 +106,7 @@ function block.SetBlock(currentIteration)
 	file:write(currentIteration .. ", " .. iterationId .. ", " .. iterationType .. ", " .. iterationBlock .. "\n")
 	file:close()
 
-	if iterationType == 0 then
+	if iterationType == 6 then
 		if config.GetLoadParams() then
 			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		else

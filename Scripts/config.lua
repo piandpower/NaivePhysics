@@ -8,10 +8,12 @@ conf = {
 	captureInterval = {
 		blockC1_static = 3,
 		blockC1_dynamic_1 = 2,
+		blockC1_dynamic_2 = 2
 	},
 	sceneTicks = {
 		blockC1_static = 200,
-		blockC1_dynamic_1 = 120
+		blockC1_dynamic_1 = 120,
+		blockC1_dynamic_2 = 120
 	},
 	visibilityCheckSize = {
 		blockC1_static = 1,
@@ -37,7 +39,7 @@ conf = {
 			block = 'blockC1_dynamic_1'
 		},
 		{
-			iterations = 0,
+			iterations = 1,
 			block = 'blockC1_dynamic_2'
 		},
 		{
@@ -98,6 +100,9 @@ function config.GetIterationInfo(iteration)
 		if iteration <= cur then
 			iterationId = iterationId + math.ceil(iteration / block_len)
 			local iterationType = iteration % block_len
+			if iterationType == 0 then
+				iterationType = block_len
+			end
 			return iterationId, iterationType, block
 		end
 
@@ -116,7 +121,7 @@ function config.IsVisibilityCheck(block, iterationType)
 	if conf.visibilityCheckSize[block] == 0 then
 		return false
 	end
-	if iterationType == 0 or iterationType > conf.tupleSize[block] then
+	if iterationType > conf.tupleSize[block] then
 		return true
 	else
 		return false
