@@ -12,7 +12,7 @@ local spheres = {sphere, sphere2, sphere3}
 local wall1 = uetorch.GetActor("Wall_400x200_8")
 local wall2 = uetorch.GetActor("Wall_400x201_7")
 local wall1_boxY,wall2_boxY
-block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
+block.actors = {wall1=wall1, wall2=wall2}
 
 local iterationId,iterationType,iterationBlock
 local params = {}
@@ -31,7 +31,7 @@ local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, angle)
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall1_boxY)
+	uetorch.SetActorLocation(wall1, -200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall1_boxY)
 	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall2_boxY)
 	if angle >= 90 then
 		utils.RemoveTickHook(WallRotationDown)
@@ -52,7 +52,7 @@ local function WallRotationUp(dt)
 	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, 90 - angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, 90 - angle)
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall1_boxY)
+	uetorch.SetActorLocation(wall1, -200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall1_boxY)
 	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall2_boxY)
 	if angle >= 90 then
 		utils.RemoveTickHook(WallRotationUp)
@@ -77,14 +77,26 @@ local function Trick(dt)
 	if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
 		step = step + 1
 
-		if not trick1 and isHidden1[step] then
-			trick1 = true
-			uetorch.SetActorVisible(spheres[params.index], visible2)
-		end
+		if params.left[params.index] == 1 then
+			if not trick1 and isHidden1[step] then
+				trick1 = true
+				uetorch.SetActorVisible(spheres[params.index], visible2)
+			end
 
-		if trick1 and not trick2 and isHidden2[step] then
-			trick2 = true
-			uetorch.SetActorVisible(spheres[params.index], visible1)
+			if trick1 and not trick2 and isHidden2[step] then
+				trick2 = true
+				uetorch.SetActorVisible(spheres[params.index], visible1)
+			end
+		else
+			if not trick1 and isHidden2[step] then
+				trick1 = true
+				uetorch.SetActorVisible(spheres[params.index], visible2)
+			end
+
+			if trick1 and not trick2 and isHidden1[step] then
+				trick2 = true
+				uetorch.SetActorVisible(spheres[params.index], visible1)
+			end
 		end
 
 		tLastCheck = tCheck
@@ -109,21 +121,40 @@ function block.SetBlock(currentIteration)
 			params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
 		else
 			params = {
-				ground = 1,--math.random(#utils.ground_materials),
-				sphereZ = 200,--70 + math.random(200),
-				forceX = 1600000,
-				forceY = 0,
-				forceZ = math.random(800000, 1000000),
-				signZ = 1,--2 * math.random(2) - 3,
-				left = 1,--math.random(0,1),
+				ground = math.random(#utils.ground_materials),
+				sphereZ = {
+					70 + math.random(200),
+					70 + math.random(200),
+					70 + math.random(200)
+				},
+				forceX = {
+					1600000,
+					1600000,
+					1600000
+				},
+				forceY = {0, 0, 0},
+				forceZ = {
+					math.random(800000, 1000000),
+					math.random(800000, 1000000),
+					math.random(800000, 1000000)
+				},
+				signZ = {
+					2 * math.random(2) - 3,
+					2 * math.random(2) - 3,
+					2 * math.random(2) - 3,
+				},
+				left = {
+					math.random(0,1),
+					math.random(0,1),
+					math.random(0,1),
+				},
 				framesStartDown = math.random(5),
 				framesRemainUp = math.random(5),
 				scaleW = 0.5,--1 - 0.5 * math.random(),
 				scaleH = 1 - 0.4 * math.random(),
-				n = 1,
-				index = 1
+				n = math.random(1,3)
 			}
-
+			params.index = math.random(1, params.n)
 			torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
 		end
 
@@ -158,7 +189,10 @@ function block.SetBlock(currentIteration)
 		end
 	end
 
-	mainActor = sphere
+	mainActor = spheres[params.index]
+	for i = 1,params.n do
+		block.actors['sphere' .. i] = spheres[i]
+	end
 end
 
 function block.RunBlock()
@@ -170,21 +204,23 @@ function block.RunBlock()
 	uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
 	wall1_boxY = uetorch.GetActorBounds(wall1).boxY
 	wall2_boxY = uetorch.GetActorBounds(wall2).boxY
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + wall1_boxY)
+	uetorch.SetActorLocation(wall1, -200 * params.scaleW, -350, 20 + wall1_boxY)
 	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall2_boxY)
 	uetorch.SetActorRotation(wall1, 0, 0, 90)
 	uetorch.SetActorRotation(wall2, 0, 0, 90)
 
 	uetorch.SetActorVisible(sphere, visible1)
 
-	if params.left == 1 then
-		uetorch.SetActorLocation(sphere, -400, -550, params.sphereZ)
-	else
-		uetorch.SetActorLocation(sphere, 500, -550, params.sphereZ)
-		params.forceX = -params.forceX
+	for i = 1,params.n do
+		uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
+		if params.left[i] == 1 then
+			uetorch.SetActorLocation(spheres[i], -400, -550 - 150 * (i - 1), params.sphereZ[i])
+		else
+			uetorch.SetActorLocation(spheres[i], 700, -550 - 150 * (i - 1), params.sphereZ[i])
+			params.forceX[i] = -params.forceX[i]
+		end
+		uetorch.AddForce(spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
 	end
-
-	uetorch.AddForce(sphere, params.forceX, params.forceY, params.signZ * params.forceZ)
 end
 
 local checkData = {}
