@@ -10,8 +10,8 @@ local sphere2 = uetorch.GetActor("Sphere9_4")
 local sphere3 = uetorch.GetActor("Sphere10_7")
 local spheres = {sphere, sphere2, sphere3}
 local wall1 = uetorch.GetActor("Wall_400x200_8")
-local wall_boxY
 local wall2 = uetorch.GetActor("Wall_400x201_7")
+local wall1_boxY,wall2_boxY
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
 
 local iterationId,iterationType,iterationBlock
@@ -31,9 +31,8 @@ local function WallRotationDown(dt)
 	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, angle)
-	--uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
-	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall1_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall2_boxY)
 	if angle >= 90 then
 		utils.RemoveTickHook(WallRotationDown)
 		t_rotation_change = t_rotation
@@ -53,9 +52,8 @@ local function WallRotationUp(dt)
 	local angle = (t_rotation - t_rotation_change) * 20 * 0.125
 	local succ = uetorch.SetActorRotation(wall1, 0, 0, 90 - angle)
 	local succ2 = uetorch.SetActorRotation(wall2, 0, 0, 90 - angle)
-	--uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
-	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall1_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall2_boxY)
 	if angle >= 90 then
 		utils.RemoveTickHook(WallRotationUp)
 		utils.AddTickHook(RemainUp)
@@ -170,9 +168,10 @@ function block.RunBlock()
 
 	uetorch.SetActorScale3D(wall1, params.scaleW, 1, params.scaleH)
 	uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
-	wall_boxY = uetorch.GetActorBounds(wall1).boxY
-	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + wall_boxY)
-	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall_boxY)
+	wall1_boxY = uetorch.GetActorBounds(wall1).boxY
+	wall2_boxY = uetorch.GetActorBounds(wall2).boxY
+	uetorch.SetActorLocation(wall1, 50 - 200 * params.scaleW, -350, 20 + wall1_boxY)
+	uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall2_boxY)
 	uetorch.SetActorRotation(wall1, 0, 0, 90)
 	uetorch.SetActorRotation(wall2, 0, 0, 90)
 
