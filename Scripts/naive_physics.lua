@@ -16,7 +16,7 @@ Tick = utils.Tick
 
 local iterationId,iterationType,iterationBlock
 
-local screenTable = {}
+local screenTable, depthTable = {}, {}
 local tLastSaveScreen = 0
 local tSaveScreen = 0
 local step = 0
@@ -28,11 +28,23 @@ local function SaveScreen(dt)
 		local file = config.GetDataPath() .. iterationId .. '/screen_' .. step .. '_' .. iterationType .. '.jpg'
 		local i1 = uetorch.Screen()
 
-		if config.GetStitch() then
-			table.insert(screenTable, i1)
-		else
-			if i1 then
+		if i1 then
+			if config.GetStitch() then
+				table.insert(screenTable, i1)
+			else
 				image.save(file, i1)
+			end
+		end
+
+		file = config.GetDataPath() .. iterationId .. '/depth_' .. step .. '_' .. iterationType .. '.jpg'
+		local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
+		local i2 = uetorch.DepthField(camera)
+
+		if i2 then
+			if config.GetStitch() then
+				table.insert(depthTable, i2)
+			else
+				image.save(file, i2)
 			end
 		end
 
@@ -72,7 +84,7 @@ local function CheckVisibility(dt)
 		step = step + 1
 		local file = config.GetDataPath() .. iterationId .. '/screenv_' .. step .. '_' .. iterationType .. '.jpg'
 		local actors = {block.MainActor()}
-		local i2 = uetorch.ObjectSegmentation(actors, config.GetStride())
+		local i2 = uetorch.ObjectSegmentation(actors)
 
 		if i2 then
 			if config.GetStitch() then
@@ -178,6 +190,15 @@ local function SaveStitchedImages()
 
 		for k,v in ipairs(screenTable) do
 			local aux = result:narrow(2, 1 + (k - 1) * height, height)
+			aux:copy(v)
+		end
+		image.save(filename, result)
+
+		filename = config.GetDataPath() .. iterationId .. '/depth_' .. iterationType .. '.jpg'
+		result = torch.FloatTensor(height * #depthTable, width)
+
+		for k,v in ipairs(depthTable) do
+			local aux = result:narrow(1, 1 + (k - 1) * height, height)
 			aux:copy(v)
 		end
 		image.save(filename, result)

@@ -4,7 +4,6 @@ conf = {
 	dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
 	loadParams = false,
 	stitch = false,
-	stride = 1,
 	captureInterval = {
 		blockC1_static = 3,
 		blockC1_dynamic_1 = 2,
@@ -75,10 +74,6 @@ end
 
 function config.GetStitch()
 	return conf.stitch
-end
-
-function config.GetStride()
-	return conf.stride
 end
 
 function config.GetBlockCaptureInterval(block)
