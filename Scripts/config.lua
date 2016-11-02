@@ -1,7 +1,8 @@
 local config = {}
 
 conf = {
-   dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/', -- don't override anything important
+   --   dataPath = '/home/mario/Documents/Unreal Projects/NaivePhysics/data/',
+   dataPath = assert(os.getenv('NAIVEPHYSICS_DATA')),
    loadParams = false,
    stitch = false,
    captureInterval = {
