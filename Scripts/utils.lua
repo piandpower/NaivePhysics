@@ -3,7 +3,6 @@ local config = require 'config'
 local utils = {}
 
 
-
 function utils.GetCurrentIteration()
    local iteration = torch.load(conf.dataPath .. 'iterations.t7')
    return iteration
@@ -24,7 +23,7 @@ function utils.UpdateIterationsCounter(check)
    if check then
       iteration = iteration + 1
    else
-      print('check failed, rerun the iteration with new parameters')
+      print('check failed, trying new parameters')
       iteration = GetFirstIterationInBlock(iteration)
    end
 
@@ -62,7 +61,6 @@ end
 local TicksRemaining
 
 function utils.SetTicksRemaining(ticks)
-   print("TicksRemaining : " .. ticks)
    TicksRemaining = ticks
 end
 

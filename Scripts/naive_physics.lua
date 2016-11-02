@@ -221,7 +221,10 @@ function SetCurrentIteration()
    local currentIteration = utils.GetCurrentIteration()
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
-   print('current iteration :', currentIteration, iterationId, iterationType, iterationBlock)
+
+   local descr = 'iteration ' .. currentIteration .. ': ' ..
+      config.IterationDescription(iterationBlock, iterationId, iterationType)
+   print(descr)
 
    block = require(iterationBlock)
    block.SetBlock(currentIteration)

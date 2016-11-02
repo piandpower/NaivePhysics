@@ -183,6 +183,7 @@ function config.GetIterationInfo(iteration)
 
    local i = iterationsTable[tonumber(iteration)]
    if not i then
+      -- TODO do not exit here but in SetCurrentIteration
       print('no more iterations, exiting')
       Exit()
    else
@@ -205,6 +206,17 @@ function config.GetIterationInfo(iteration)
 
       return i.iterationId, i.iterationType, i.iterationBlock, path
    end
+end
+
+
+function config.IterationDescription(iterationBlock, iterationId, iterationType)
+   local _type = 'train ' .. iterationId
+   if iterationType ~= -1 then
+      local _n = 1 + config.GetBlockSize(iterationBlock) - iterationType
+      _type = 'test ' .. iterationId ..
+         ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')'
+   end
+   return _type .. ' (' .. iterationBlock .. ', ' .. config.GetBlockTicks(iterationBlock) .. ' ticks) '
 end
 
 
