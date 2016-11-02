@@ -39,11 +39,7 @@ local function SaveScreen(dt)
       local i1 = uetorch.Screen()
 
       if i1 then
-         if config.GetStitch() then
-            table.insert(screenTable, i1)
-         else
-            image.save(file, i1)
-         end
+         image.save(file, i1)
       end
 
       file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
@@ -51,11 +47,7 @@ local function SaveScreen(dt)
       local i2 = uetorch.DepthField(camera)
 
       if i2 then
-         if config.GetStitch() then
-            table.insert(depthTable, i2)
-         else
-            image.save(file, i2)
-         end
+         image.save(file, i2)
       end
 
       tLastSaveScreen = tSaveScreen
@@ -99,11 +91,7 @@ local function CheckVisibility(dt)
       local i2 = uetorch.ObjectSegmentation(actors)
 
       if i2 then
-         if config.GetStitch() then
-            table.insert(visibilityTable, i2)
-         else
-            image.save(file, i2)
-         end
+         image.save(file, i2)
 
          if torch.max(i2) == 0 then
             hidden = true
@@ -185,48 +173,13 @@ local function SaveData()
    end
 end
 
-local function SaveStitchedImages()
-   if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      local filename = iterationPath .. 'mask/mask.png'
-      local height = visibilityTable[1]:size(1)
-      local width = visibilityTable[1]:size(2)
-      local result = torch.IntTensor(height * #visibilityTable, width)
-
-      for k,v in ipairs(visibilityTable) do
-         local aux = result:narrow(1, 1 + (k - 1) * height, height)
-         aux:copy(v)
-      end
-      image.save(filename, result)
-   else
-      local filename = iterationPath .. 'scene/scene.png'
-      local height = screenTable[1]:size(2)
-      local width = screenTable[1]:size(3)
-      local result = torch.Tensor(3, height * #screenTable, width)
-
-      for k,v in ipairs(screenTable) do
-         local aux = result:narrow(2, 1 + (k - 1) * height, height)
-         aux:copy(v)
-      end
-      image.save(filename, result)
-
-      filename = iterationPath .. 'depth/depth.png'
-      result = torch.FloatTensor(height * #depthTable, width)
-
-      for k,v in ipairs(depthTable) do
-         local aux = result:narrow(1, 1 + (k - 1) * height, height)
-         aux:copy(v)
-      end
-      image.save(filename, result)
-   end
-end
 
 function SetCurrentIteration()
    local currentIteration = utils.GetCurrentIteration()
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
-   local descr = 'iteration ' .. currentIteration .. ': ' ..
-      config.IterationDescription(iterationBlock, iterationId, iterationType)
+   local descr = 'running ' .. config.IterationDescription(iterationBlock, iterationId, iterationType)
    print(descr)
 
    block = require(iterationBlock)
@@ -256,7 +209,4 @@ function SetCurrentIteration()
    utils.AddTickHook(block.SaveCheckInfo)
    utils.AddEndTickHook(SaveData)
    utils.AddEndTickHook(block.Check)
-   if config.GetStitch() then
-      utils.AddEndTickHook(SaveStitchedImages)
-   end
 end

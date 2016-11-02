@@ -41,7 +41,6 @@ end
 conf = {
    dataPath = assert(os.getenv('NAIVEPHYSICS_DATA')),
    loadParams = false,
-   stitch = false,
    captureInterval = {
       blockC1_static = 3,
       blockC1_dynamic_1 = 2,
@@ -120,11 +119,6 @@ end
 
 function config.GetLoadParams()
    return conf.loadParams
-end
-
-
-function config.GetStitch()
-   return conf.stitch
 end
 
 
