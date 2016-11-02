@@ -1,6 +1,7 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+local material = require 'material'
 local block = {}
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
@@ -119,7 +120,7 @@ function block.SetBlock(currentIteration)
          params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
       else
          params = {
-            ground = math.random(#utils.ground_materials),
+            ground = math.random(#material.ground_materials),
             framesStartDown = math.random(20),
             framesRemainUp = math.random(20),
             scaleW = 1 - 0.4 * math.random(),
@@ -167,7 +168,7 @@ function block.SetBlock(currentIteration)
 end
 
 function block.RunBlock()
-   utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
+   material.SetActorMaterial(floor, material.ground_materials[params.ground])
    utils.AddTickHook(RemainDown)
    uetorch.SetActorLocation(camera, 100, 30, 80)
 

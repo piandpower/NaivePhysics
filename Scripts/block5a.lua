@@ -1,6 +1,7 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+local material = require 'material'
 local block = {}
 
 local sphere = uetorch.GetActor("Sphere_4")
@@ -85,11 +86,11 @@ function block.SetBlock(currentIteration)
    iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
 
    if iterationType == 0 then
-      utils.SetActorMaterial(sphere, "GreenMaterial")
-      utils.SetActorMaterial(wall, "BlackMaterial")
+      material.SetActorMaterial(sphere, "GreenMaterial")
+      material.SetActorMaterial(wall, "BlackMaterial")
 
       params = {
-         ground = math.random(#utils.ground_materials),
+         ground = math.random(#material.ground_materials),
          sphereZ = 200 + math.random(150),
          forceX = math.random(1800000, 2200000),
          forceY = 0,
@@ -118,7 +119,7 @@ function block.SetBlock(currentIteration)
 end
 
 function block.RunBlock()
-   utils.SetActorMaterial(floor, utils.ground_materials[params.ground])
+   material.SetActorMaterial(floor, material.ground_materials[params.ground])
    uetorch.AddTickHook(StartDown)
    uetorch.SetActorLocation(camera, 100, 30, 80)
 
