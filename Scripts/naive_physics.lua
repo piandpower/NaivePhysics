@@ -4,12 +4,16 @@ local config = require 'config'
 local utils = require 'utils'
 local block
 
-uetorch.SetTickDeltaBounds(1/8, 1/8)
 
 function SetResolution(dt)
    uetorch.SetResolution(512, 288) -- keep the 16:9 proportion
 end
+
+
 SetResolution()
+uetorch.SetTickDeltaBounds(1/8, 1/8)
+math.randomseed(os.getenv('NAIVEPHYSICS_SEED') or os.time())
+
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
