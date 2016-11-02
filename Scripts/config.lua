@@ -88,21 +88,23 @@ function SetIterationsCounter()
    print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
 
    -- put the detail of each iteration into a table
-   local n, iterationsTable = 1, {}
+   local n, id_train, id_test, iterationsTable = 1, 1, 1, {}
    for block, iters in pairs(config.GetBlocks()) do
       -- setup train iterations for the current block
       for id = 1, iters.train do
-         iterationsTable[n] = {iterationBlock=block, iterationType=-1, iterationId=id}
+         iterationsTable[n] = {iterationBlock=block, iterationType=-1, iterationId=id_train}
          n = n + 1
+         id_train = id_train + 1
       end
 
       -- setup test iterations for the current block
       local ntypes = config.GetTupleSize(block) + config.GetVisibilityCheckSize(block)
       for id = 1, iters.test do
          for t = ntypes, 1, -1 do
-            iterationsTable[n] = {iterationBlock=block, iterationType=t, iterationId=id}
+            iterationsTable[n] = {iterationBlock=block, iterationType=t, iterationId=id_test}
             n = n + 1
          end
+         id_test = id_test + 1
       end
    end
 

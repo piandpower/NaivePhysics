@@ -14,7 +14,7 @@ local wall = uetorch.GetActor("Wall_400x200_8")
 local wall_boxY
 block.actors = {wall=wall}
 
-local iterationId,iterationType,iterationBlock
+local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
 local isHidden
 
@@ -110,14 +110,19 @@ function block.MainActor()
 end
 
 function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath =
+      config.GetIterationInfo(currentIteration)
+
    local file = io.open (config.GetDataPath() .. 'output.txt', "a")
-   file:write(currentIteration .. ", " .. iterationId .. ", " .. iterationType .. ", " .. iterationBlock .. "\n")
+   file:write(currentIteration .. ", " ..
+                 iterationId .. ", " ..
+                 iterationType .. ", " ..
+                 iterationBlock .. "\n")
    file:close()
 
    if iterationType == 5 then
       if config.GetLoadParams() then
-         params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+         params = torch.load(config.GetDataPath() .. '/params.t7')
       else
          params = {
             ground = math.random(#material.ground_materials),
@@ -129,7 +134,7 @@ function block.SetBlock(currentIteration)
          }
 
          params.index = math.random(1, params.n)
-         torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
+         torch.save(config.GetDataPath() .. '/params.t7', params)
       end
 
       for i = 1,3 do
@@ -138,8 +143,8 @@ function block.SetBlock(currentIteration)
          end
       end
    else
-      isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden_5.t7')
-      params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+      isHidden = torch.load(config.GetDataPath() .. '/hidden_5.t7')
+      params = torch.load(config.GetDataPath() .. '/params.t7')
       utils.AddTickHook(Trick)
 
       if iterationType == 1 then
@@ -202,7 +207,7 @@ local maxDiff = 1e-6
 
 function block.Check()
    local status = true
-   torch.save(config.GetDataPath() .. iterationId .. '/check_' .. iterationType .. '.t7', checkData)
+   torch.save(config.GetDataPath() .. 'check_' .. iterationType .. '.t7', checkData)
 
    if iterationType == 1 then
       local file = io.open(config.GetDataPath() .. 'output.txt', "a")
@@ -226,7 +231,7 @@ function block.Check()
          local allData = {}
 
          for i = 1,size do
-            local aux = torch.load(config.GetDataPath() .. iterationId .. '/check_' .. i .. '.t7')
+            local aux = torch.load(config.GetDataPath() .. 'check_' .. i .. '.t7')
             allData[i] = aux
          end
 

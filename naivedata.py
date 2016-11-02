@@ -204,8 +204,8 @@ def Main():
             raise IOError(
                 'Existing output directory: {}'.format(output_dir))
 
-    for i in range(1, 6):
-        os.makedirs(os.path.join(output_dir, str(i)))
+    os.makedirs(output_dir)
+
 
     # setup the environment variables used in lua scripts
     os.environ['NAIVEPHYSICS_DATA'] = output_dir

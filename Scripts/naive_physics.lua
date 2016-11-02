@@ -1,4 +1,5 @@
 local uetorch = require 'uetorch'
+local lfs = require 'lfs'
 local image = require 'image'
 local config = require 'config'
 local utils = require 'utils'
@@ -22,7 +23,7 @@ RunBlock = nil
 -- replace uetorch's Tick function
 Tick = utils.Tick
 
-local iterationId,iterationType,iterationBlock
+local iterationId, iterationType, iterationBlock, iterationPath
 
 local screenTable, depthTable = {}, {}
 local tLastSaveScreen = 0
@@ -33,7 +34,7 @@ local function SaveScreen(dt)
    if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
 
-      local file = config.GetDataPath() .. iterationId .. '/screen_' .. step .. '_' .. iterationType .. '.jpg'
+      local file = iterationPath .. 'scene/scene_' .. step .. '.png'
       local i1 = uetorch.Screen()
 
       if i1 then
@@ -44,7 +45,7 @@ local function SaveScreen(dt)
          end
       end
 
-      file = config.GetDataPath() .. iterationId .. '/depth_' .. step .. '_' .. iterationType .. '.jpg'
+      file = iterationPath .. 'depth/depth_' .. step .. '.png'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
       local i2 = uetorch.DepthField(camera)
 
@@ -90,7 +91,7 @@ local isHidden = {}
 local function CheckVisibility(dt)
    if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
-      local file = config.GetDataPath() .. iterationId .. '/screenv_' .. step .. '_' .. iterationType .. '.jpg'
+      local file = iterationPath .. 'mask/mask_' .. step .. '.png'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
@@ -134,9 +135,9 @@ local function SaveData()
          end
       end
 
-      torch.save(config.GetDataPath() .. iterationId .. '/hidden_' .. iterationType .. '.t7', isHidden)
+      torch.save(config.GetDataPath() .. 'hidden_' .. iterationType .. '.t7', isHidden)
    else
-      local filename = config.GetDataPath() .. iterationId .. '/data_' .. iterationType .. '.txt'
+      local filename = iterationPath .. 'data_' .. iterationType .. '.txt'
       local file = assert(io.open(filename, "w"))
       file:write("block = " .. iterationBlock .. "\n")
 
@@ -153,7 +154,8 @@ local function SaveData()
       local maxx = bounds["x"] + bounds["boxX"]
       local miny = bounds["y"] - bounds["boxY"]
       local maxy = bounds["y"] + bounds["boxY"]
-      file:write("minX = " .. minx .. " maxX = " .. maxx .. " minY = " .. miny .. " maxY = " .. maxy .. "\n")
+      file:write("minX = " .. minx .. " maxX = " .. maxx ..
+                    " minY = " .. miny .. " maxY = " .. maxy .. "\n")
 
       local nactors = 0
       for k,v in pairs(block.actors) do
@@ -170,7 +172,9 @@ local function SaveData()
             local loc = v[k2]["location"]
             file:write("x = " .. loc["x"] .. " y = " .. loc["y"] .. " z = " .. loc["z"] .. "\n")
             local rot = v[k2]["rotation"]
-            file:write("pitch = " .. rot["pitch"] .. " roll = " .. rot["roll"] .. " yaw = " .. rot["yaw"] .. "\n")
+            file:write("pitch = " .. rot["pitch"] ..
+                          " roll = " .. rot["roll"] ..
+                          " yaw = " .. rot["yaw"] .. "\n")
          end
       end
 
@@ -180,7 +184,7 @@ end
 
 local function SaveStitchedImages()
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      local filename = config.GetDataPath() .. iterationId .. '/screenv_' .. iterationType .. '.jpg'
+      local filename = iterationPath .. 'mask/mask.png'
       local height = visibilityTable[1]:size(1)
       local width = visibilityTable[1]:size(2)
       local result = torch.IntTensor(height * #visibilityTable, width)
@@ -191,7 +195,7 @@ local function SaveStitchedImages()
       end
       image.save(filename, result)
    else
-      local filename = config.GetDataPath() .. iterationId .. '/screen_' .. iterationType .. '.jpg'
+      local filename = iterationPath .. 'scene/scene.png'
       local height = screenTable[1]:size(2)
       local width = screenTable[1]:size(3)
       local result = torch.Tensor(3, height * #screenTable, width)
@@ -202,7 +206,7 @@ local function SaveStitchedImages()
       end
       image.save(filename, result)
 
-      filename = config.GetDataPath() .. iterationId .. '/depth_' .. iterationType .. '.jpg'
+      filename = iterationPath .. 'depth/depth.png'
       result = torch.FloatTensor(height * #depthTable, width)
 
       for k,v in ipairs(depthTable) do
@@ -215,7 +219,8 @@ end
 
 function SetCurrentIteration()
    local currentIteration = utils.GetCurrentIteration()
-   iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath =
+      config.GetIterationInfo(currentIteration)
    print('current iteration :', currentIteration, iterationId, iterationType, iterationBlock)
 
    block = require(iterationBlock)
@@ -223,6 +228,12 @@ function SetCurrentIteration()
    RunBlock = function()
       return block.RunBlock()
    end
+
+   -- create subdirectories for this iteration
+   lfs.mkdir(iterationPath .. 'scene')
+   lfs.mkdir(iterationPath .. 'mask')
+   lfs.mkdir(iterationPath .. 'depth')
+
 
    utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
 
