@@ -2,7 +2,12 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = {}
 
-utils.ground_materials = {"M_Basic_Floor", "M_Ground_Grass", "M_Ground_Moss", "M_Wood_Floor_Walnut_Polished", "M_Wood_Floor_Walnut_Worn"}
+
+utils.ground_materials = {
+   "M_Basic_Floor", "M_Ground_Grass",
+   "M_Ground_Moss", "M_Wood_Floor_Walnut_Polished",
+   "M_Wood_Floor_Walnut_Worn"}
+
 
 function utils.SetActorMaterial(actor, id)
    local materialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
@@ -10,28 +15,36 @@ function utils.SetActorMaterial(actor, id)
    uetorch.SetMaterial(actor, material)
 end
 
+
 function utils.GetCurrentIteration()
    local iteration = torch.load(conf.dataPath .. 'iterations.t7')
    return iteration
 end
 
+
 local function GetFirstIterationInBlock(iteration)
    local iterationId, iterationType, block = config.GetIterationInfo(iteration)
-   return iteration + config.GetBlockSize(block) - iterationType
+   return iteration - config.GetBlockSize(block) + iterationType
 end
+
 
 function utils.UpdateIterationsCounter(check)
    local iteration = utils.GetCurrentIteration()
-   local iterationId, iterationType, iterationBlock = config.GetIterationInfo(iteration)
+   local iterationId, iterationType, iterationBlock, iterationPath
+      = config.GetIterationInfo(iteration)
 
    if check then
-      iteration = iteration - 1
+      iteration = iteration + 1
    else
+      print('check failed, rerun the iteration with new parameters')
       iteration = GetFirstIterationInBlock(iteration)
    end
 
+   -- TODO ensure the iteration exists in iterationsTable (for now
+   -- done in GetIterationinfo)
    torch.save(conf.dataPath .. 'iterations.t7', iteration)
 end
+
 
 local TickHooks = {}
 local EndTickHooks = {}
@@ -42,9 +55,11 @@ function utils.AddTickHook(f)
    table.insert(TickHooks, f)
 end
 
+
 function utils.AddEndTickHook(f)
    table.insert(EndTickHooks, f)
 end
+
 
 -- remove the function f from the set of tick hooks
 function utils.RemoveTickHook(f)
@@ -55,12 +70,14 @@ function utils.RemoveTickHook(f)
    end
 end
 
+
 local TicksRemaining
 
 function utils.SetTicksRemaining(ticks)
    print("TicksRemaining : " .. ticks)
    TicksRemaining = ticks
 end
+
 
 local tickCount = 1
 local foundError = false
