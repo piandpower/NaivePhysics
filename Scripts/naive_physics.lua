@@ -179,6 +179,11 @@ function SetCurrentIteration()
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
+   if iterationId == nil then
+      print('no more iteration, exiting')
+      utils.Exit()
+   end
+
    local descr = 'running ' .. config.IterationDescription(iterationBlock, iterationId, iterationType)
    print(descr)
 

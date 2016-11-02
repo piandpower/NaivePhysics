@@ -3,6 +3,13 @@ local config = require 'config'
 local utils = {}
 
 
+-- Exit the program
+function utils.Exit()
+   uetorch.ExecuteConsoleCommand('Exit')
+end
+
+
+
 function utils.GetCurrentIteration()
    local iteration = torch.load(conf.dataPath .. 'iterations.t7')
    return iteration

@@ -1,14 +1,6 @@
 local lfs = require 'lfs'
 local json = require 'cjson'
-local uetorch = require 'uetorch'
-
 local config = {}
-
-
--- Exit the program
-local function Exit()
-   uetorch.ExecuteConsoleCommand('Exit')
-end
 
 
 -- Pad a number with beginning zeros, return it as a string
@@ -177,9 +169,7 @@ function config.GetIterationInfo(iteration)
 
    local i = iterationsTable[tonumber(iteration)]
    if not i then
-      -- TODO do not exit here but in SetCurrentIteration
-      print('no more iterations, exiting')
-      Exit()
+      return nil
    else
       subpath = 'train/'
       if i.iterationType ~= -1 then
