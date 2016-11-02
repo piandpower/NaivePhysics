@@ -5,7 +5,11 @@ local utils = require 'utils'
 local block
 
 uetorch.SetTickDeltaBounds(1/8, 1/8)
-uetorch.SetResolution(512, 288) -- keep the 16:9 proportion
+
+function SetResolution(dt)
+   uetorch.SetResolution(512, 288) -- keep the 16:9 proportion
+end
+SetResolution()
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
@@ -217,6 +221,11 @@ function SetCurrentIteration()
    end
 
    utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
+
+   -- tweak to force the first iteration to be at the required
+   -- resolution
+   utils.AddTickHook(SetResolution)
+
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
       utils.AddTickHook(CheckVisibility)
    else
