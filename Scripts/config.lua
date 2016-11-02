@@ -12,7 +12,7 @@ end
 
 
 -- Pad a number with beginning zeros, return it as a string
-local function PadZeros(int, n)
+function PadZeros(int, n)
    s = tostring(int)
    for _ = 1, n-#s do
       s = '0' .. s

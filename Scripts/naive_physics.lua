@@ -33,8 +33,9 @@ local step = 0
 local function SaveScreen(dt)
    if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
+      local stepStr = PadZeros(step, 3)
 
-      local file = iterationPath .. 'scene/scene_' .. step .. '.png'
+      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.png'
       local i1 = uetorch.Screen()
 
       if i1 then
@@ -45,7 +46,7 @@ local function SaveScreen(dt)
          end
       end
 
-      file = iterationPath .. 'depth/depth_' .. step .. '.png'
+      file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
       local i2 = uetorch.DepthField(camera)
 
@@ -91,7 +92,9 @@ local isHidden = {}
 local function CheckVisibility(dt)
    if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
-      local file = iterationPath .. 'mask/mask_' .. step .. '.png'
+      local stepStr = PadZeros(step, 3)
+
+      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
