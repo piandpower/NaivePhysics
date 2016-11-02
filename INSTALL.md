@@ -56,14 +56,19 @@ jessie (it may be fine for Ubuntu 14.04 as well)
         echo "LUA_PATH=\"$(readlink -f ./NaivePhysics/Scripts)"'/?.lua;$LUA_PATH"' >> ~/.bashrc
         source ~/.bashrc
 
-* Open it in the Unreal Editor (this takes a while the first time) and
-  compile it as a stand-alone binary:
+* Compile the NaivePhysics project as a standalone binary in the
+  `./NaivePhysics/Package` directory
 
-        cd ./UnrealEngine/Engine/Binaries/Linux/
-        ./UE4Editor $(readlink -f ../../../../NaivePhysics/NaivePhysics.uproject)
+    * **Script way** Simply execute the `build_package.sh` script
 
-    In the *File/Package Project* menu, select the Linux target and
-    `./NaivePhysics/Package` as the package directory. This operation
-    takes a while on the first time.
+    * **Graphical way** Alternatively you can package it within the
+      Unreal Editor (this takes a while the first time)
 
-    ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
+            cd ./UnrealEngine/Engine/Binaries/Linux/
+            ./UE4Editor $(readlink -f ../../../../NaivePhysics/NaivePhysics.uproject)
+
+      In the *File/Package Project* menu, select the Linux target and
+      `./NaivePhysics/Package` as the package directory. This
+      operation takes a while on the first time.
+
+      ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
