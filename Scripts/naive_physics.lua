@@ -128,12 +128,14 @@ local function SaveData()
 
       torch.save(config.GetDataPath() .. 'hidden_' .. iterationType .. '.t7', isHidden)
    else
+      -- TODO need to be refactored, better if we have a
+      -- status/status_n.txt file per tick (to be consistent with
+      -- depth/scene folders)
       local filename = iterationPath .. 'status.txt'
       local file = assert(io.open(filename, "w"))
       file:write("block = " .. iterationBlock .. "\n")
 
-      local possible = block.IsPossible()
-      if possible then
+      if block.IsPossible() then
          file:write("possible = true\n")
       else
          file:write("possible = false\n")

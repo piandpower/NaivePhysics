@@ -1,0 +1,17 @@
+TODO list for the NaivePhysics project
+
+* data dir
+** refactor status.txt
+** dump parms to params.txt
+* train pathway
+** no checks, no masks, no depth
+* variability
+** add materials for floor, sky and walls
+** random light position/number
+** random camera position
+* packaging
+** make a docker
+** convert images to video online
+   eg Ronan does:
+   alias show=' yes | ffmpeg -framerate 24 -i out%04d.png -c:v libx264 -r 30 -pix_fmt yuv420p video.mp4; vlc --play-and-exit video.mp4;'
+** parallel runs from Python? (--njobs option)
