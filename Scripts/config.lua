@@ -1,4 +1,3 @@
-local lfs = require 'lfs'
 local json = require 'cjson'
 local config = {}
 
@@ -160,6 +159,7 @@ iterationsTable = nil
 local maxId = nil
 
 function config.GetIterationInfo(iteration)
+   -- if not loaded, load the table of all iterations to execute
    if not iterationsTable then
       iterationsTable = ReadJson(conf.dataPath .. 'iterations_table.json')
       maxId = 0
@@ -168,32 +168,30 @@ function config.GetIterationInfo(iteration)
       end
    end
 
-   local i = iterationsTable[tonumber(iteration)]
-   if not i then
-      return nil
-   else
-      subpath = 'train/'
-      if i.iterationType ~= -1 then
-         subpath = 'test/'
-      end
+   -- retrieve the current iteration in the table
+   local i = assert(iterationsTable[tonumber(iteration)])
 
-      -- TODO do not create directories here but in SetCurrentIteration
-      path = conf.dataPath .. subpath
-      lfs.mkdir(path)
-
-      path = path .. PadZeros(i.iterationId, #tostring(maxId)) .. '/'
-      lfs.mkdir(path)
-
-      if i.iterationType ~= -1 then
-         path = path .. i.iterationType .. '/'
-         lfs.mkdir(path)
-      end
-
-      return i.iterationId, i.iterationType, i.iterationBlock, path
+   -- get the output directory for that iteration
+   subpath = 'train/'
+   if i.iterationType ~= -1 then
+      subpath = 'test/'
    end
+
+   path = conf.dataPath .. subpath
+      .. PadZeros(i.iterationId, #tostring(maxId))
+      .. '_' .. i.iterationBlock .. '/'
+
+   if i.iterationType ~= -1 then
+      path = path .. i.iterationType .. '/'
+   end
+
+   return i.iterationId, i.iterationType, i.iterationBlock, path
 end
 
 
+-- return a string to be printed on screen, describing to humans the
+-- iteration being ran, e.g. "running test 1 (2/5) (blockC1_dynamic_1,
+-- 120 ticks)"
 function config.IterationDescription(iterationBlock, iterationId, iterationType)
    local _type = 'train ' .. iterationId
    if iterationType ~= -1 then

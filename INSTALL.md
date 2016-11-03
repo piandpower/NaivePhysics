@@ -29,6 +29,9 @@ jessie (it may be fine for Ubuntu 14.04 as well)
         source ~/.bashrc
         cd ..
 
+        # install lua dependancies
+        luarocks install cjson paths
+
 * Install the Unreal Engine along with the NaivePhysics UETorch plugin,
   activate UETorch in your `.bashrc`:
 

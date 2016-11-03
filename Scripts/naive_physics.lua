@@ -1,5 +1,5 @@
 local uetorch = require 'uetorch'
-local lfs = require 'lfs'
+local paths = require 'paths'
 local image = require 'image'
 local config = require 'config'
 local utils = require 'utils'
@@ -128,7 +128,7 @@ local function SaveData()
 
       torch.save(config.GetDataPath() .. 'hidden_' .. iterationType .. '.t7', isHidden)
    else
-      local filename = iterationPath .. 'data_' .. iterationType .. '.txt'
+      local filename = iterationPath .. 'status.txt'
       local file = assert(io.open(filename, "w"))
       file:write("block = " .. iterationBlock .. "\n")
 
@@ -187,10 +187,13 @@ function SetCurrentIteration()
    RunBlock = function() return block.RunBlock() end
 
    -- create subdirectories for this iteration
-   lfs.mkdir(iterationPath .. 'scene')
-   lfs.mkdir(iterationPath .. 'mask')
-   lfs.mkdir(iterationPath .. 'depth')
-
+   paths.mkdir(iterationPath)
+   if config.IsVisibilityCheck(iterationBlock, iterationType) then
+      paths.mkdir(iterationPath .. 'mask')
+   else
+      paths.mkdir(iterationPath .. 'scene')
+      paths.mkdir(iterationPath .. 'depth')
+   end
 
    utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
 
