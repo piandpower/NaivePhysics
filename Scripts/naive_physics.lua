@@ -179,19 +179,12 @@ function SetCurrentIteration()
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
-   if iterationId == nil then
-      print('no more iteration, exiting')
-      utils.Exit()
-   end
-
    local descr = 'running ' .. config.IterationDescription(iterationBlock, iterationId, iterationType)
    print(descr)
 
    block = require(iterationBlock)
    block.SetBlock(currentIteration)
-   RunBlock = function()
-      return block.RunBlock()
-   end
+   RunBlock = function() return block.RunBlock() end
 
    -- create subdirectories for this iteration
    lfs.mkdir(iterationPath .. 'scene')

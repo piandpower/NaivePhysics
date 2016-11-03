@@ -156,7 +156,8 @@ function config.IsVisibilityCheck(block, iterationType)
 end
 
 
-local iterationsTable, maxId = nil, nil
+iterationsTable = nil
+local maxId = nil
 
 function config.GetIterationInfo(iteration)
    if not iterationsTable then

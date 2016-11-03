@@ -3,13 +3,6 @@ local config = require 'config'
 local utils = {}
 
 
--- Exit the program
-function utils.Exit()
-   uetorch.ExecuteConsoleCommand('Exit')
-end
-
-
-
 function utils.GetCurrentIteration()
    local iteration = torch.load(conf.dataPath .. 'iterations.t7')
    return iteration
@@ -34,8 +27,12 @@ function utils.UpdateIterationsCounter(check)
       iteration = GetFirstIterationInBlock(iteration)
    end
 
-   -- TODO ensure the iteration exists in iterationsTable (for now
-   -- done in GetIterationinfo)
+   -- ensure the iteration exists in iterationsTable
+   if not iterationsTable[tonumber(iteration)] then
+      print('no more iteration, exiting')
+      uetorch.ExecuteConsoleCommand('Exit')
+   end
+
    torch.save(conf.dataPath .. 'iterations.t7', iteration)
 end
 
@@ -93,7 +90,6 @@ function utils.Tick(dt)
       end
    elseif not foundError then
       foundError = true
-      print("no TicksRemaining")
    end
 end
 
