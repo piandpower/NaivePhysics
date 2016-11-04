@@ -19,6 +19,7 @@ local params = {}
 local iterationId
 local iterationType
 local iterationBlock
+local iterationPath
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 local floor = uetorch.GetActor('Floor')
@@ -83,7 +84,8 @@ local function StartDown(dt)
 end
 
 function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath
+      = config.GetIterationInfo(currentIteration)
 
    if iterationType == 0 then
       material.SetActorMaterial(sphere, "GreenMaterial")
@@ -103,10 +105,10 @@ function block.SetBlock(currentIteration)
          scaleH = 1
       }
 
-      torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
+      WriteJson(params, iterationPath .. '../params.json')
    else
-      isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
-      params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+      isHidden = torch.load(iterationPath .. '../hidden.t7')
+      params = ReadJson(iterationPath .. '../params.json')
 
       if iterationType == 1 then
          rebound = false

@@ -126,7 +126,7 @@ local function SaveData()
          end
       end
 
-      torch.save(config.GetDataPath() .. 'hidden_' .. iterationType .. '.t7', isHidden)
+      torch.save(iterationPath .. '../hidden_' .. iterationType .. '.t7', isHidden)
    else
       -- TODO need to be refactored, better if we have a
       -- status/status_n.txt file per tick (to be consistent with
@@ -170,7 +170,6 @@ local function SaveData()
                           " yaw = " .. rot["yaw"] .. "\n")
          end
       end
-
       file:close()
    end
 end
@@ -184,10 +183,6 @@ function SetCurrentIteration()
    local descr = 'running ' .. config.IterationDescription(iterationBlock, iterationId, iterationType)
    print(descr)
 
-   block = require(iterationBlock)
-   block.SetBlock(currentIteration)
-   RunBlock = function() return block.RunBlock() end
-
    -- create subdirectories for this iteration
    paths.mkdir(iterationPath)
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
@@ -196,6 +191,16 @@ function SetCurrentIteration()
       paths.mkdir(iterationPath .. 'scene')
       paths.mkdir(iterationPath .. 'depth')
    end
+
+   -- prepare the block
+   block = require(iterationBlock)
+   if iterationType == -1 then -- train
+      block.SetBlockTrain(currentIteration)
+   else -- test
+      block.SetBlockTest(currentIteration)
+   end
+
+   RunBlock = function() return block.RunBlock() end
 
    utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
 
@@ -209,7 +214,13 @@ function SetCurrentIteration()
       utils.AddTickHook(SaveScreen)
    end
    utils.AddTickHook(SaveStatusToTable)
-   utils.AddTickHook(block.SaveCheckInfo)
    utils.AddEndTickHook(SaveData)
-   utils.AddEndTickHook(block.Check)
+
+   if iterationType == -1 then -- train
+      local tweak = function(dt) return utils.UpdateIterationsCounter(true) end
+      utils.AddEndTickHook(tweak)
+   else
+      utils.AddTickHook(block.SaveCheckInfo)
+      utils.AddEndTickHook(block.Check)
+   end
 end

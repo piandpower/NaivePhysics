@@ -2,6 +2,15 @@ local json = require 'cjson'
 local config = {}
 
 
+function RandomBool()
+   local b = math.random(0, 1)
+   if b == 1 then
+      return true
+   end
+   return false
+end
+
+
 -- Pad a number with beginning zeros, return it as a string
 function PadZeros(int, n)
    s = tostring(int)
@@ -13,7 +22,7 @@ end
 
 
 -- Load a JSon file as a table
-local function ReadJson(file)
+function ReadJson(file)
    local f = assert(io.open(file, "rb"))
    local content = f:read("*all")
    f:close()
@@ -22,7 +31,7 @@ end
 
 
 -- Write a table as a JSon file
-local function WriteJson(t, file)
+function WriteJson(t, file)
    local f = assert(io.open(file, "wb"))
    f:write(json.encode(t))
    f:close()

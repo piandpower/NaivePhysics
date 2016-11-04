@@ -109,7 +109,42 @@ function block.MainActor()
    return mainActor
 end
 
-function block.SetBlock(currentIteration)
+
+function block.SetBlockTrain(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath =
+      config.GetIterationInfo(currentIteration)
+
+   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+   file:write(currentIteration .. ", " ..
+                 iterationId .. ", " ..
+                 iterationType .. ", " ..
+                 iterationBlock .. "\n")
+   file:close()
+
+   params = {
+      ground = math.random(#material.ground_materials),
+      framesStartDown = math.random(20),
+      framesRemainUp = math.random(20),
+      scaleW = 1 - 0.4 * math.random(),
+      scaleH = 1 - 0.5 * math.random(),
+      n = math.random(1,3)
+   }
+
+   params.index = math.random(1, params.n)
+   WriteJson(params, iterationPath .. 'params.json')
+
+   visible1 = RandomBool()
+   visible2 = visible1
+   possible = true
+
+   mainActor = spheres[params.index]
+   for i = 1,params.n do
+      block.actors['sphere' .. i] = spheres[i]
+   end
+end
+
+
+function block.SetBlockTest(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
@@ -122,7 +157,7 @@ function block.SetBlock(currentIteration)
 
    if iterationType == 5 then
       if config.GetLoadParams() then
-         params = torch.load(config.GetDataPath() .. '/params.t7')
+         params = ReadJson(iterationPath .. '../params.json')
       else
          params = {
             ground = math.random(#material.ground_materials),
@@ -134,7 +169,7 @@ function block.SetBlock(currentIteration)
          }
 
          params.index = math.random(1, params.n)
-         torch.save(config.GetDataPath() .. '/params.t7', params)
+         WriteJson(params, iterationPath .. '../params.json')
       end
 
       for i = 1,3 do
@@ -143,8 +178,8 @@ function block.SetBlock(currentIteration)
          end
       end
    else
-      isHidden = torch.load(config.GetDataPath() .. '/hidden_5.t7')
-      params = torch.load(config.GetDataPath() .. '/params.t7')
+      isHidden = torch.load(iterationPath .. '../hidden_5.t7')
+      params = ReadJson(iterationPath .. '../params.json')
       utils.AddTickHook(Trick)
 
       if iterationType == 1 then
@@ -207,7 +242,7 @@ local maxDiff = 1e-6
 
 function block.Check()
    local status = true
-   torch.save(config.GetDataPath() .. 'check_' .. iterationType .. '.t7', checkData)
+   torch.save(iterationPath .. '../check_' .. iterationType .. '.t7', checkData)
 
    if iterationType == 1 then
       local file = io.open(config.GetDataPath() .. 'output.txt', "a")
@@ -231,7 +266,7 @@ function block.Check()
          local allData = {}
 
          for i = 1,size do
-            local aux = torch.load(config.GetDataPath() .. 'check_' .. i .. '.t7')
+            local aux = torch.load(iterationPath .. '../check_' .. i .. '.t7')
             allData[i] = aux
          end
 

@@ -20,6 +20,7 @@ local params = {}
 local iterationId
 local iterationType
 local iterationBlock
+local iterationPath
 
 local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_1")
 local floor = uetorch.GetActor('Floor')
@@ -96,7 +97,8 @@ local function MagicTrick(dt)
 end
 
 function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock = config.GetIterationInfo(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath
+      = config.GetIterationInfo(currentIteration)
 
    if iterationType == 0 then
       material.SetActorMaterial(sphere, "GreenMaterial")
@@ -112,10 +114,10 @@ function block.SetBlock(currentIteration)
          scaleH = 1 - 0.5 * math.random()
       }
 
-      torch.save(config.GetDataPath() .. iterationId .. '/params.t7', params)
+      torch.save(iterationPath .. '../params.json', params)
    else
-      isHidden = torch.load(config.GetDataPath() .. iterationId .. '/hidden.t7')
-      params = torch.load(config.GetDataPath() .. iterationId .. '/params.t7')
+      isHidden = torch.load(iterationPath .. '../hidden.t7')
+      params = torch.load(iterationPath .. '/params.json')
       uetorch.AddTickHook(MagicTrick)
 
       if iterationType == 1 then

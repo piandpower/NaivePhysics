@@ -1,17 +1,17 @@
 TODO list for the NaivePhysics project
 
 * data dir
-** refactor status.txt
-** dump parms to params.txt
-* train pathway
-** no checks, no masks, no depth
+** TODO refactor status.txt
 * variability
-** add materials for floor, sky and walls
-** random light position/number
-** random camera position
+** TODO add materials for floor, sky and walls
+** TODO random light position/number
+** TODO random camera position
 * packaging
-** make a docker
-** convert images to video online
+** TODO make a docker
+** TODO convert images to video online
    eg Ronan does:
    alias show=' yes | ffmpeg -framerate 24 -i out%04d.png -c:v libx264 -r 30 -pix_fmt yuv420p video.mp4; vlc --play-and-exit video.mp4;'
-** parallel runs from Python? (--njobs option)
+** TODO parallel runs from Python? (--njobs option)
+* blocks
+** a bug in C1_dynamic_1?
+   Sometimes the main actor move slower in 2nd than in 1st iteration ???

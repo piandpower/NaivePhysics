@@ -111,16 +111,80 @@ function block.MainActor()
    return mainActor
 end
 
-function block.SetBlock(currentIteration)
+
+function block.SetBlockTrain(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
+
    local file = io.open (config.GetDataPath() .. 'output.txt', "a")
-   file:write(currentIteration .. ", " .. iterationId .. ", " .. iterationType .. ", " .. iterationBlock .. "\n")
+   file:write(currentIteration .. ", " ..
+                 iterationId .. ", " ..
+                 iterationType .. ", " ..
+                 iterationBlock .. "\n")
+   file:close()
+
+   params = {
+      ground = math.random(#material.ground_materials),
+      sphereZ = {
+         70 + math.random(200),
+         70 + math.random(200),
+         70 + math.random(200)
+      },
+      forceX = {
+         1600000,
+         1600000,
+         1600000
+      },
+      forceY = {0, 0, 0},
+      forceZ = {
+         math.random(800000, 1000000),
+         math.random(800000, 1000000),
+         math.random(800000, 1000000)
+      },
+      signZ = {
+         2 * math.random(2) - 3,
+         2 * math.random(2) - 3,
+         2 * math.random(2) - 3,
+      },
+      left = {
+         math.random(0,1),
+         math.random(0,1),
+         math.random(0,1),
+      },
+      framesStartDown = math.random(5),
+      framesRemainUp = math.random(5),
+      scaleW = 0.5,--1 - 0.5 * math.random(),
+      scaleH = 1 - 0.4 * math.random(),
+      n = math.random(1,3)
+   }
+   params.index = math.random(1, params.n)
+   WriteJson(params, iterationPath .. 'params.json')
+
+   visible1 = RandomBool()
+   visible2 = visible1
+   possible = true
+
+   mainActor = spheres[params.index]
+   for i = 1,params.n do
+      block.actors['sphere' .. i] = spheres[i]
+   end
+end
+
+
+function block.SetBlockTest(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath =
+      config.GetIterationInfo(currentIteration)
+
+   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+   file:write(currentIteration .. ", " ..
+                 iterationId .. ", " ..
+                 iterationType .. ", " ..
+                 iterationBlock .. "\n")
    file:close()
 
    if iterationType == 6 then
       if config.GetLoadParams() then
-         params = torch.load(config.GetDataPath() .. '/params.t7')
+         params = ReadJson(iterationPath .. '../params.json')
       else
          params = {
             ground = math.random(#material.ground_materials),
@@ -157,18 +221,18 @@ function block.SetBlock(currentIteration)
             n = math.random(1,3)
          }
          params.index = math.random(1, params.n)
-         torch.save(config.GetDataPath() .. '/params.t7', params)
+         WriteJson(params, iterationPath .. '../params.json')
       end
 
       uetorch.DestroyActor(wall2)
    else
-      params = torch.load(config.GetDataPath() .. '/params.t7')
+      params = ReadJson(iterationPath .. '../params.json')
 
       if iterationType == 5 then
          uetorch.DestroyActor(wall1)
       else
-         isHidden1 = torch.load(config.GetDataPath() .. '/hidden_6.t7')
-         isHidden2 = torch.load(config.GetDataPath() .. '/hidden_5.t7')
+         isHidden1 = torch.load(iterationPath .. '../hidden_6.t7')
+         isHidden2 = torch.load(iterationPath .. '../hidden_5.t7')
          utils.AddTickHook(Trick)
 
          if iterationType == 1 then
@@ -240,11 +304,11 @@ local maxDiff = 1e-6
 
 function block.Check()
    local status = true
-   torch.save(config.GetDataPath() .. '/check_' .. iterationType .. '.t7', checkData)
+   torch.save(iterationPath .. '../check_' .. iterationType .. '.t7', checkData)
    local file = io.open(config.GetDataPath() .. 'output.txt', "a")
 
    if iterationType == 6 then
-      local isHidden1 = torch.load(config.GetDataPath() .. '/hidden_6.t7')
+      local isHidden1 = torch.load(iterationPath .. '../hidden_6.t7')
       local foundHidden = false
       for i = 1,#isHidden1 do
          if isHidden1[i] then
@@ -259,7 +323,7 @@ function block.Check()
    end
 
    if iterationType == 5 then
-      local isHidden2 = torch.load(config.GetDataPath() .. '/hidden_5.t7')
+      local isHidden2 = torch.load(iterationPath .. '../hidden_5.t7')
       local foundHidden = false
       for i = 1,#isHidden2 do
          if isHidden2[i] then
@@ -276,7 +340,7 @@ function block.Check()
    if iterationType < 6 and status then
       local iteration = utils.GetCurrentIteration()
       local ticks = config.GetBlockTicks(iterationBlock)
-      local prevData = torch.load(config.GetDataPath() .. '/check_' .. (iterationType + 1) .. '.t7')
+      local prevData = torch.load(iterationPath .. '../check_' .. (iterationType + 1) .. '.t7')
 
       for t = 1,ticks do
          -- check location values
