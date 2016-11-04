@@ -2,12 +2,9 @@ local json = require 'cjson'
 local config = {}
 
 
+-- Return true or false randmly
 function RandomBool()
-   local b = math.random(0, 1)
-   if b == 1 then
-      return true
-   end
-   return false
+   return 1 == math.random(0, 1)
 end
 
 

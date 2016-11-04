@@ -1,11 +1,11 @@
 TODO list for the NaivePhysics project
 
-* data dir
-** refactor status.txt
 * variability
 ** add materials for floor, sky and walls
 ** random light position/number
 ** random camera position
+* data dir
+** refactor status.txt
 * packaging
 ** make a docker
 ** convert images to video online
