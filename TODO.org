@@ -7,6 +7,7 @@ TODO list for the NaivePhysics project
 * data dir
 ** refactor status.txt
 * packaging
+** update INSTALL.md, make a proper Setup.sh
 ** make a docker
 ** convert images to video online
    eg Ronan does:

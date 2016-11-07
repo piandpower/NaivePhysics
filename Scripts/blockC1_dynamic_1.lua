@@ -29,11 +29,15 @@ local t_rotation_change = 0
 local function WallRotationDown(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
    uetorch.SetActorRotation(wall, 0, 0, angle)
-   uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+   uetorch.SetActorLocation(
+      wall, 100 - 200 * params.scaleW, -250,
+      20 + math.sin(angle * math.pi / 180) * wall_boxY)
+
    if angle >= 90 then
       utils.RemoveTickHook(WallRotationDown)
       t_rotation_change = t_rotation
    end
+
    t_rotation = t_rotation + dt
 end
 
@@ -48,12 +52,16 @@ end
 local function WallRotationUp(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
    uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
-   uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+   uetorch.SetActorLocation(
+      wall, 100 - 200 * params.scaleW, -250,
+      20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+
    if angle >= 90 then
       utils.RemoveTickHook(WallRotationUp)
       utils.AddTickHook(RemainUp)
       t_rotation_change = t_rotation
    end
+
    t_rotation = t_rotation + dt
 end
 
@@ -89,18 +97,9 @@ function block.MainActor()
 end
 
 
-function block.SetBlockTrain(currentIteration)
-   iterationId, iterationType, iterationBlock, iterationPath
-      = config.GetIterationInfo(currentIteration)
-
-   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
-   file:write(currentIteration .. ", " ..
-                 iterationId .. ", " ..
-                 iterationType .. ", " ..
-                 iterationBlock .. "\n")
-   file:close()
-
-   params = {
+-- Return random parameters for the C1 dynamic_1 block
+local function GetRandomParams()
+   local params = {
       ground = math.random(#material.ground_materials),
       sphereZ = {
          70 + math.random(200),
@@ -135,6 +134,23 @@ function block.SetBlockTrain(currentIteration)
       n = math.random(1,3),
    }
    params.index = math.random(1, params.n)
+
+   return params
+end
+
+
+function block.SetBlockTrain(currentIteration)
+   iterationId, iterationType, iterationBlock, iterationPath
+      = config.GetIterationInfo(currentIteration)
+
+   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+   file:write(currentIteration .. ", " ..
+                 iterationId .. ", " ..
+                 iterationType .. ", " ..
+                 iterationBlock .. "\n")
+   file:close()
+
+   params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
    visible1 = RandomBool()
@@ -163,41 +179,7 @@ function block.SetBlockTest(currentIteration)
       if config.GetLoadParams() then
          params = ReadJson(iterationPath .. '../params.json')
       else
-         params = {
-            ground = math.random(#material.ground_materials),
-            sphereZ = {
-               70 + math.random(200),
-               70 + math.random(200),
-               70 + math.random(200)
-            },
-            forceX = {
-               math.random(800000, 1100000),
-               math.random(800000, 1100000),
-               math.random(800000, 1100000)
-            },
-            forceY = {0, 0, 0},
-            forceZ = {
-               math.random(800000, 1000000),
-               math.random(800000, 1000000),
-               math.random(800000, 1000000)
-            },
-            signZ = {
-               2 * math.random(2) - 3,
-               2 * math.random(2) - 3,
-               2 * math.random(2) - 3
-            },
-            left = {
-               math.random(0,1),
-               math.random(0,1),
-               math.random(0,1)
-            },
-            framesStartDown = math.random(5),
-            framesRemainUp = math.random(5),
-            scaleW = 0.5,--0 - 0.5 * math.random(),
-            scaleH = 1 - 0.5 * math.random(),
-            n = math.random(1,3),
-         }
-         params.index = math.random(1, params.n)
+         params = GetRandomParams()
          WriteJson(params, iterationPath .. '../params.json')
       end
 
@@ -251,13 +233,17 @@ function block.RunBlock()
    for i = 1,params.n do
       uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
       if params.left[i] == 1 then
-         uetorch.SetActorLocation(spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
+         uetorch.SetActorLocation(
+            spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
       else
-         uetorch.SetActorLocation(spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
+         uetorch.SetActorLocation(
+            spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
          params.forceX[i] = -params.forceX[i]
       end
 
-      uetorch.AddForce(spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
+      uetorch.AddForce(
+         spheres[i], params.forceX[i], params.forceY[i],
+         params.signZ[i] * params.forceZ[i])
    end
 end
 

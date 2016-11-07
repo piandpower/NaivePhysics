@@ -33,11 +33,17 @@ local RemainDown
 
 local function WallRotationDown(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
+
    uetorch.SetActorRotation(wall, 0, 0, angle)
-   uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin(angle * math.pi / 180) * wall_boxY)
+
+   uetorch.SetActorLocation(
+      wall, 100 - 200 * params.scaleW, -350,
+      20 + math.sin(angle * math.pi / 180) * wall_boxY)
+
    if angle >= 90 then
       utils.RemoveTickHook(WallRotationDown)
       t_rotation_change = t_rotation
+
       if cont == 1 then
          uetorch.AddTickHook(RemainDown)
          canDoTrick2 = true
@@ -103,6 +109,23 @@ local function Trick(dt)
    tCheck = tCheck + dt
 end
 
+
+-- Return random parameters for the C1 static block
+local function GetRandomParams()
+   local params = {
+      ground = math.random(#material.ground_materials),
+      framesStartDown = math.random(20),
+      framesRemainUp = math.random(20),
+      scaleW = 1 - 0.4 * math.random(),
+      scaleH = 1 - 0.5 * math.random(),
+      n = math.random(1,3)
+   }
+   params.index = math.random(1, params.n)
+
+   return params
+end
+
+
 local mainActor
 
 function block.MainActor()
@@ -121,16 +144,7 @@ function block.SetBlockTrain(currentIteration)
                  iterationBlock .. "\n")
    file:close()
 
-   params = {
-      ground = math.random(#material.ground_materials),
-      framesStartDown = math.random(20),
-      framesRemainUp = math.random(20),
-      scaleW = 1 - 0.4 * math.random(),
-      scaleH = 1 - 0.5 * math.random(),
-      n = math.random(1,3)
-   }
-
-   params.index = math.random(1, params.n)
+   params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
    visible1 = RandomBool()
@@ -159,16 +173,7 @@ function block.SetBlockTest(currentIteration)
       if config.GetLoadParams() then
          params = ReadJson(iterationPath .. '../params.json')
       else
-         params = {
-            ground = math.random(#material.ground_materials),
-            framesStartDown = math.random(20),
-            framesRemainUp = math.random(20),
-            scaleW = 1 - 0.4 * math.random(),
-            scaleH = 1 - 0.5 * math.random(),
-            n = math.random(1,3)
-         }
-
-         params.index = math.random(1, params.n)
+         params = GetRandomParams()
          WriteJson(params, iterationPath .. '../params.json')
       end
 
