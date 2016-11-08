@@ -114,6 +114,8 @@ end
 local function GetRandomParams()
    local params = {
       ground = math.random(#material.ground_materials),
+      wall = math.random(#material.wall_materials),
+      sphere = math.random(#material.sphere_materials),
       framesStartDown = math.random(20),
       framesRemainUp = math.random(20),
       scaleW = 1 - 0.4 * math.random(),
@@ -213,17 +215,26 @@ function block.SetBlockTest(currentIteration)
 end
 
 function block.RunBlock()
-   material.SetActorMaterial(floor, material.ground_materials[params.ground])
-   utils.AddTickHook(RemainDown)
+   --camera
    uetorch.SetActorLocation(camera, 100, 30, 80)
 
+   -- floor
+   material.SetActorMaterial(floor, material.ground_materials[params.ground])
+
+   -- wall
+   material.SetActorMaterial(wall, material.wall_materials[params.wall])
+   utils.AddTickHook(RemainDown)
    uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
    wall_boxY = uetorch.GetActorBounds(wall).boxY
    uetorch.SetActorRotation(wall, 0, 0, 90)
    uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + wall_boxY)
 
+   -- spheres
    uetorch.SetActorLocation(sphere, 150, -550, 70)
    uetorch.SetActorVisible(spheres[params.index], visible1)
+   for i = 1,params.n do
+      material.SetActorMaterial(spheres[i], material.sphere_materials[params.sphere])
+   end
    if params.n >= 2 then
       uetorch.SetActorLocation(sphere2, 40,-550, 70)
    end
