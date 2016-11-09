@@ -1,18 +1,39 @@
 # NaivePhysics
 #### Data generation for the Naive Physics project using Unreal Engine
 
-Developed with
+Developed
+with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
-4.8 and the [UETorch](https://github.com/marioyc/UETorch) plugin,
-some additional functionalities (like functions for agents to handle
-objects or calls Unreal's commandline commands) that are particular to
-the project are available at
-[this fork](https://github.com/marioyc/UETorch).
+4.8 and our [UETorch](https://github.com/marioyc/UETorch) fork.
 
 ## Installation details
 
-See the
-[installation page](https://github.com/bootphon/NaivePhysics/blob/master/INSTALL.md).
+This installation process succeeded on Debian stable (Jessie) and
+Ubuntu 14.04. It may be fine for other Unices as well, but this have
+not been tested.
+
+* First of all setup an Epic Games account at
+  https://github.com/EpicGames/Signup/, needed to clone the Unreal
+  Engine repository from github. UETorch currently only works with the
+  source distribution of UE4 in the version 4.8, not the binary
+  download.
+
+* The clone the NaivePhysics repository from github and go in its root
+  directory:
+
+        git clone git@github.com:bootphon/NaivePhysics.git
+        cd NaivePhysics
+
+* Then setup the whole project
+
+        ./Setup.sh
+
+  This takes a while. Download and install Lua, Torch, Unreal Engine
+  and UETorch in the `NaivePhysics`. Activate the project environment
+  in your `~/.bashrc`.
+
+  If the setup script failed, you may want to execute it line per line.
+
 
 ## Main script
 
@@ -32,6 +53,7 @@ UETorch:
   information accumulated during the simulation.
 * **GetCurrentIteration**: taken from utils.lua
 * **Tick**: replaces UETorch's Tick function, taken from utils.lua.
+
 
 ## Configuration script
 
@@ -56,6 +78,7 @@ properties of the simulations:
   previously.
 
 Also provides some functions that allow access to these properties.
+
 
 ## Blocks' scripts
 
@@ -82,6 +105,7 @@ Each block script independently sets the scenario for the simulation and should 
 * A **IsPossible()** function which says whether the sequence is
   possible.
 
+
 ## Utils' script (**utils.lua**)
 
 * **SetActorMaterial** sets the material of a given actor from a fixed
@@ -104,3 +128,22 @@ Each block script independently sets the scenario for the simulation and should 
   and copy the possible cases.
 * **copy_testing.sh** : goes throught some of the generated scenarios
   and copy the possible and impossible cases.
+
+
+## License
+
+**Copyright 2016 Mario Ynocente Castro, Mathieu Bernard**
+
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.

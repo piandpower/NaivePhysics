@@ -1,4 +1,35 @@
 #!/usr/bin/env python
+#
+# Copyright 2016 Mario Ynocente Castro, Mathieu Bernard
+#
+# You can redistribute this file and/or modify it under the terms of
+# the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""High-level wrapper for NaivePhysics data generation
+
+This programm wraps the NaivePhysics binary (as packaged by Unreal
+Engine) into a simple to use command-line interface. It defines few
+environment variables (such as output directory and random seed),
+launch the binary and filter its log messages at runtime, keeping only
+relevant messages.
+
+The NAIVEPHYSICS_BINARY variable must be defined in your environment
+(this is done for you by the activate-naivephysics script).
+
+To see command-line arguments, have a::
+
+    ./naivedata.py --help
+
+"""
 
 import argparse
 import logging
@@ -40,15 +71,15 @@ BLOCKS_AVAILABLE = ['blockC1_static', 'blockC1_dynamic_1', 'blockC1_dynamic_2']
 NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
 
 
-class StripFormatter(logging.Formatter):
-    """Strip trailing \n in log messages"""
+class LogStripFormatter(logging.Formatter):
+    """Strips trailing \n in log messages"""
     def format(self, record):
         record.msg = record.msg.strip()
-        return super(StripFormatter, self).format(record)
+        return super(LogStripFormatter, self).format(record)
 
 
-class UnrealLogFormatter(StripFormatter):
-    """Remove begining date and module name, remove ending '\n'"""
+class LogUnrealFormatter(LogStripFormatter):
+    """Removes begining date, module name and trailing '\n'"""
     def format(self, record):
         # remove all content before and including the second ':' (this
         # strip off the date and id from Unreal log messages)
@@ -58,17 +89,17 @@ class UnrealLogFormatter(StripFormatter):
         except IndexError:
             pass
 
-        return super(UnrealLogFormatter, self).format(record)
+        return super(LogUnrealFormatter, self).format(record)
 
 
-class NoEmptyMessageFilter(logging.Filter):
-    """Inhibit empty log messages (spaces only or \n)"""
+class LogNoEmptyMessageFilter(logging.Filter):
+    """Inhibits empty log messages (spaces only or \n)"""
     def filter(self, record):
         return len(record.getMessage().strip())
 
 
-class NoStartupMessagesFilter(logging.Filter):
-    """Remove luatorch import messages and unreal startup messages"""
+class LogNoStartupMessagesFilter(logging.Filter):
+    """Removes luatorch import messages and unreal startup messages"""
     def filter(self, record):
         msg = record.getMessage()
         return not (
@@ -77,8 +108,8 @@ class NoStartupMessagesFilter(logging.Filter):
             'per-process limit of core file size to infinity.' in msg)
 
 
-class InhibitUnrealFilter(logging.Filter):
-    """Inhibit some Unreal log messages
+class LogInhibitUnrealFilter(logging.Filter):
+    """Inhibits some unrelevant Unreal log messages
 
     Messages containing 'Error:' or 'LogScriptPlugin' are kept, other
     are removed from the Unreal Engine log (messages like
@@ -93,16 +124,22 @@ class InhibitUnrealFilter(logging.Filter):
 
 
 def GetLogger(verbose=False):
+    """Returns a logger configured to filter Unreal log messages
+
+    If `verbose` is True, do not filter any message, if `verbose` is
+    False (default), keep only relevant messages)
+
+    """
     log = logging.getLogger('NaivePhysics')
     log.setLevel(logging.DEBUG)
-    log.addFilter(NoEmptyMessageFilter())
+    log.addFilter(LogNoEmptyMessageFilter())
 
     if not verbose:
-        log.addFilter(InhibitUnrealFilter())
-        log.addFilter(NoStartupMessagesFilter())
-        formatter = UnrealLogFormatter('%(message)s')
+        log.addFilter(LogInhibitUnrealFilter())
+        log.addFilter(LogNoStartupMessagesFilter())
+        formatter = LogUnrealFormatter('%(message)s')
     else:
-        formatter = StripFormatter('%(message)s')
+        formatter = LogStripFormatter('%(message)s')
 
     # log to standard output
     std_handler = logging.StreamHandler(sys.stdout)
@@ -114,7 +151,9 @@ def GetLogger(verbose=False):
 
 
 def ParseArgs():
-    # do not format epilog, arguments only (see
+    """Defines a commndline argument parser and returns the parsed arguments"""
+    # better display of the help message, do not format epilog but
+    # arguments only (see
     # https://stackoverflow.com/questions/18462610)
     class CustomFormatter(
             argparse.ArgumentDefaultsHelpFormatter,
@@ -122,7 +161,7 @@ def ParseArgs():
         pass
 
     parser = argparse.ArgumentParser(
-        description='Data generation for the NaivePhysics project',
+        description='Data generator for the NaivePhysics project',
         epilog='An exemple of a JSon configuration file is:\n{}'
         .format(JSON_EXEMPLE),
         formatter_class=CustomFormatter)
@@ -205,7 +244,6 @@ def Main():
                 'Existing output directory: {}'.format(output_dir))
 
     os.makedirs(output_dir)
-
 
     # setup the environment variables used in lua scripts
     os.environ['NAIVEPHYSICS_DATA'] = output_dir

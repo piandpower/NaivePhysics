@@ -56,3 +56,14 @@ Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Installed dependencies
+Package/*
+UnrealEngine/*
+torch/*
+activate-naivephysics
+
+# Data directory and json configuration files
+data/*
+*.json
+!exemple.json
