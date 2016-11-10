@@ -28,14 +28,15 @@ export UNREALENGINE_ROOT=$NAIVEPHYSICS_ROOT/UnrealEngine
 TORCH_ROOT=$NAIVEPHYSICS_ROOT/torch
 
 
-echo "Step 1: setup torch and lua"
+echo "Step 1: setup Torch and Lua"
 
-git clone git@github.com:torch/distro.git $TORCH_ROOT
+git clone --branch master --depth 1 git@github.com:torch/distro.git $TORCH_ROOT
 cd $TORCH_ROOT
 bash install-deps
-TORCH_LUA_VERSION=LUA52 ./install.sh
+TORCH_LUA_VERSION=LUA52 ./install.sh -s
 source $TORCH_ROOT/install/bin/torch-activate
-luarocks install cjson paths
+luarocks install lua-cjson
+luarocks install paths
 
 
 echo "Step 2: setup Unreal Engine and UETorch"
@@ -65,14 +66,14 @@ cat > activate-naivephysics << EOF
 export NAIVEPHYSICS_ROOT=$NAIVEPHYSICS_ROOT
 export UNREALENGINE_ROOT=$UNREALENGINE_ROOT
 
-source $NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
-source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
+source \$NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
+source \$UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
 
-LUA_PATH="$NAIVEPHYSICS_ROOT/Scripts/?.lua;\$LUA_PATH"
+LUA_PATH="\$NAIVEPHYSICS_ROOT/uproject/Scripts/?.lua;\$LUA_PATH"
 
-export NAIVEPHYSICS_BINARY=$NAIVEPHYSICS_ROOT/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
+export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/uproject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
 
-alias naive_editor="$UNREALENGINE_ROOT/Engine/Binaries/Linux/UE4Editor $NAIVEPHYSICS_ROOT/NaivePhysics.uproject"
+alias naive_editor="\$UNREALENGINE_ROOT/Engine/Binaries/Linux/UE4Editor \$NAIVEPHYSICS_ROOT/uproject/NaivePhysics.uproject"
 EOF
 
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc

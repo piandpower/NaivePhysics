@@ -18,21 +18,18 @@ not been tested.
   source distribution of UE4 in the version 4.8, not the binary
   download.
 
-* The clone the NaivePhysics repository from github and go in its root
-  directory:
+* The clone the NaivePhysics repository from github, go in its root
+  directory and run the `Setup.sh` script:
 
         git clone git@github.com:bootphon/NaivePhysics.git
         cd NaivePhysics
-
-* Then setup the whole project
-
         ./Setup.sh
 
-  This takes a while. Download and install Lua, Torch, Unreal Engine
-  and UETorch in the `NaivePhysics`. Activate the project environment
-  in your `~/.bashrc`.
+  This takes a while: it downloads and installs Lua, Torch, Unreal
+  Engine and UETorch in the `NaivePhysics`. It finally activates the
+  project environment in your `~/.bashrc`.
 
-  If the setup script failed, you may want to execute it line per line.
+* If the setup script failed, you may want to execute it line per line.
 
 
 ## Main script
