@@ -52,11 +52,7 @@ source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh
 cd $NAIVEPHYSICS_ROOT
 
 
-echo "Step 3: setup the NaivePhysics binary"
-$NAIVEPHYSICS_ROOT/build_package.sh
-
-
-echo "final step: write the activate-naivephysics script and add it in your ~/.bashrc"
+echo "Step 3: write the activate-naivephysics script and add it in your ~/.bashrc"
 cat > activate-naivephysics << EOF
 #!/bin/bash
 #
@@ -69,11 +65,16 @@ export UNREALENGINE_ROOT=$UNREALENGINE_ROOT
 source \$NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
 source \$UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
 
-LUA_PATH="\$NAIVEPHYSICS_ROOT/uproject/Scripts/?.lua;\$LUA_PATH"
+LUA_PATH="\$NAIVEPHYSICS_ROOT/UnrealProject/Scripts/?.lua;\$LUA_PATH"
 
-export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/uproject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
+export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/UnrealProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
 
-alias naive_editor="\$UNREALENGINE_ROOT/Engine/Binaries/Linux/UE4Editor \$NAIVEPHYSICS_ROOT/uproject/NaivePhysics.uproject"
+alias naive_editor="\$UNREALENGINE_ROOT/Engine/Binaries/Linux/UE4Editor \$NAIVEPHYSICS_ROOT/UnrealProject/NaivePhysics.uproject"
 EOF
 
+source $NAIVEPHYSICS_ROOT/activate-naivephysics
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
+
+
+echo "Step 4: setup the NaivePhysics binary"
+$NAIVEPHYSICS_ROOT/build_package.sh
