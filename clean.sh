@@ -1,6 +1,6 @@
-rm -r Binaries/
-rm -r Build/
-rm -r DerivedDataCache/
-rm -r Intermediate/
-rm -r Saved/
-rm -r LinuxNoEditor/
+rm -r UnrealProject/Binaries/
+rm -r UnrealProject/Build/
+rm -r UnrealProject/DerivedDataCache/
+rm -r UnrealProject/Intermediate/
+rm -r UnrealProject/Saved/
+rm -r UnrealProject/LinuxNoEditor/
