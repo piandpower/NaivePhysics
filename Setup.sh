@@ -69,7 +69,6 @@ LUA_PATH="\$NAIVEPHYSICS_ROOT/UnrealProject/Scripts/?.lua;\$LUA_PATH"
 
 export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/UnrealProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
 
-alias naive_editor="\$UNREALENGINE_ROOT/Engine/Binaries/Linux/UE4Editor \$NAIVEPHYSICS_ROOT/UnrealProject/NaivePhysics.uproject"
 EOF
 
 source $NAIVEPHYSICS_ROOT/activate-naivephysics

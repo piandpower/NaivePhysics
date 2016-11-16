@@ -7,9 +7,6 @@ TODO list for the NaivePhysics project
 ** refactor status.txt
 * packaging
 ** make a docker?
-** convert images to video online
-   eg Ronan does:
-   alias show=' yes | ffmpeg -framerate 24 -i out%04d.png -c:v libx264 -r 30 -pix_fmt yuv420p video.mp4; vlc --play-and-exit video.mp4;'
 ** parallel runs from Python? (--njobs option)
 * blocks
 ** a bug in C1_dynamic_1?

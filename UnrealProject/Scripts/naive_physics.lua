@@ -216,10 +216,10 @@ function SetCurrentIteration()
    utils.AddTickHook(SaveStatusToTable)
    utils.AddEndTickHook(SaveData)
 
-   if iterationType == -1 then -- train
+   if iterationType == -1 then  -- train
       local tweak = function(dt) return utils.UpdateIterationsCounter(true) end
       utils.AddEndTickHook(tweak)
-   else
+   else  -- test
       utils.AddTickHook(block.SaveCheckInfo)
       utils.AddEndTickHook(block.Check)
    end
