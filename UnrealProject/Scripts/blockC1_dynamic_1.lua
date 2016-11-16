@@ -131,11 +131,24 @@ local function GetRandomParams()
       },
       framesStartDown = math.random(5),
       framesRemainUp = math.random(5),
-      scaleW = 0.5,--0 - 0.5 * math.random(),
+      scaleW = 0.5,  --0 - 0.5 * math.random(),
       scaleH = 1 - 0.5 * math.random(),
       n = math.random(1,3),
    }
    params.index = math.random(1, params.n)
+
+   if iterationType == -1 then
+      params.cameraPosition = {
+         math.random(-50, 50),
+         0,
+         math.random(-10, 30)
+      }
+      params.cameraRotation = {
+         math.random(-30, 10), -- x rotation is up/down, to link with Z position
+         math.random(-40, 40), -- y rotation is left/right
+         0
+      }
+   end
 
    return params
 end
@@ -222,7 +235,23 @@ end
 
 function block.RunBlock()
    -- camera
-   uetorch.SetActorLocation(camera, 100, 30, 80)
+   if iterationType == -1 then  -- train with random camera postion/orientation
+      print('camera X shift = ' .. params.cameraPosition[1] .. ' ' .. params.cameraRotation[1])
+      uetorch.SetActorLocation(
+         camera,
+         100 + params.cameraPosition[1],
+         30 + params.cameraPosition[2],
+         80 + params.cameraPosition[3])
+
+      uetorch.SetActorRotation(
+         camera,
+         0 + params.cameraRotation[1],
+         -90 + params.cameraRotation[2],
+         0 + params.cameraRotation[3])
+   else
+      uetorch.SetActorLocation(camera, 100, 30, 80)
+      uetorch.SetActorRotation(camera, 0, -90, 0)
+   end
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
