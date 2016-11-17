@@ -18,9 +18,9 @@
 
 This programm wraps the NaivePhysics binary (as packaged by Unreal
 Engine) into a simple to use command-line interface. It defines few
-environment variables (such as output directory and random seed),
-launch the binary and filter its log messages at runtime, keeping only
-relevant messages.
+environment variables (namely input JSon configuration file, output
+directory and random seed), launch the binary and filter its log
+messages at runtime, keeping only relevant messages.
 
 The NAIVEPHYSICS_BINARY variable must be defined in your environment
 (this is done for you by the activate-naivephysics script).
@@ -35,6 +35,7 @@ import argparse
 import logging
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -69,6 +70,12 @@ BLOCKS_AVAILABLE = ['blockC1_static', 'blockC1_dynamic_1', 'blockC1_dynamic_2']
 # path to packaged the NaivePhysics binary (environment variable has
 # been setup in activate-naivephysics)
 NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
+
+# path to the UnrealEngine directory
+UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
+
+# path to the NaivePhysics directory
+NAIVEPHYSICS_ROOT = os.environ['NAIVEPHYSICS_ROOT']
 
 
 class LogStripFormatter(logging.Formatter):
@@ -184,23 +191,23 @@ def ParseArgs():
 
     parser.add_argument(
         '-f', '--force', action='store_true',
-        help='Overwrite <output-dir>, any content is erased')
+        help='Overwrite <output-dir>, any existing content is erased')
 
     parser.add_argument(
         '-v', '--verbose', action='store_true',
-        help='Do not filter UnrealEngine messages')
+        help='Display all the UnrealEngine log messages')
+
+    parser.add_argument(
+        '--editor', action='store_true',
+        help='Launch the NaivePhysics project in the UnrealEngine editor')
 
     return parser.parse_args()
 
 
-def RunBinary(log):
-    if not os.path.isfile(NAIVEPHYSICS_BINARY):
-        raise IOError('No such file: {}'.format(NAIVEPHYSICS_BINARY))
-
-    log.debug('running {}'.format(os.path.basename(NAIVEPHYSICS_BINARY)))
-
+def _Run(command, log):
+    print(command)
     job = subprocess.Popen(
-        NAIVEPHYSICS_BINARY,
+        shlex.split(command),
         stdin=None,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
@@ -225,6 +232,34 @@ def RunBinary(log):
                   os.path.basename(NAIVEPHYSICS_BINARY),
                   job.returncode)
         sys.exit(job.returncode)
+
+
+def RunBinary(log):
+    """Run the NaivePhysics packaged binary as a subprocess"""
+    if not os.path.isfile(NAIVEPHYSICS_BINARY):
+        raise IOError('No such file: {}'.format(NAIVEPHYSICS_BINARY))
+
+    log.debug('running {}'.format(os.path.basename(NAIVEPHYSICS_BINARY)))
+
+    _Run(NAIVEPHYSICS_BINARY, log)
+
+
+def RunEditor(log):
+    """Run the NaivePhysics project within the UnrealEngine editor"""
+
+    editor = os.path.join(
+        UNREALENGINE_ROOT, 'Engine', 'Binaries', 'Linux', 'UE4Editor')
+    if not os.path.isfile(editor):
+        raise IOError('No such file: {}'.format(editor))
+
+    project = os.path.join(
+        NAIVEPHYSICS_ROOT, 'UnrealProject', 'NaivePhysics.uproject')
+    if not os.path.isfile(project):
+        raise IOError('No such file: {}'.format(project))
+
+    log.debug('running NaivePhysics in the Unreal Engine editor')
+
+    _Run(editor + ' ' + project, log)
 
 
 def Main():
@@ -252,7 +287,12 @@ def Main():
         os.environ['NAIVEPHYSICS_SEED'] = args.seed
 
     # finally setup the log and run the simulation
-    RunBinary(GetLogger(verbose=args.verbose))
+    log = GetLogger(verbose=args.verbose)
+
+    if args.editor:
+        RunEditor(log)
+    else:
+        RunBinary(log)
 
 
 if __name__ == '__main__':

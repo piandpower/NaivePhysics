@@ -6,6 +6,7 @@ TODO list for the NaivePhysics project
 * data dir
 ** refactor status.txt
 * packaging
+** update the README with install/package instructions
 ** make a docker?
 ** parallel runs from Python? (--njobs option)
 * blocks
