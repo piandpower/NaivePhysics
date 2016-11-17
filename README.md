@@ -29,10 +29,44 @@ not been tested.
   Engine and UETorch in the `NaivePhysics`. It finally activates the
   project environment in your `~/.bashrc`.
 
-* If the setup script failed, you may want to execute it line per line.
+* The final step is to package the `NaivePhysics` project into a
+  standalone binary. We provide the `build_package.sh` for doing that,
+  but the first time (i.e. right after a compilation from scratch) it
+  seems not to work.
+
+  So you need a manual intervention in the editor. Open it with:
+
+        ./naivedata.py exemple.json ./data --editor
+
+  In the *File/Package Project* menu, select the *Linux* target and
+  `./NaivePhysics/Package` as the package directory. This operation
+  takes a while.
+
+  ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
 
 
-## Main script
+## Usage
+
+Once installed and packaged, use the `naivedata.py` program to
+generate data. To discover it, have a:
+
+    naivedata.py --help
+
+## Potential issue
+
+If the 3D scene generated seems to be frozen (the spheres are moving
+but the wall remains in the 'down' position for a while), there is a
+problem with the packaged `NaivePhysics` binary.
+
+Try to repackage it with the `build_package.sh` script or within the
+UnrealEngine editor.
+
+If the problem persists, launch the editor (with the *--editor* option
+of `naivedata.py`), click on the *Play* button (in the top panel) and
+repackage the game from the *File/Package Project* menu.
+
+
+## Lua scripts in UnrealProject/Scripts
 
 The **naive_physics.lua** file contains the parts that are common to
 all different blocks, like setting the scenario and providing some

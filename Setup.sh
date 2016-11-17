@@ -73,7 +73,3 @@ EOF
 
 source $NAIVEPHYSICS_ROOT/activate-naivephysics
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
-
-
-echo "Step 4: setup the NaivePhysics binary"
-$NAIVEPHYSICS_ROOT/build_package.sh
