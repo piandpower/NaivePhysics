@@ -140,12 +140,12 @@ local function GetRandomParams()
    if iterationType == -1 then
       params.cameraPosition = {
          math.random(-50, 50),
-         0,
-         math.random(-10, 30)
+         math.random(-100, 0),
+         math.random(-10, 50)
       }
       params.cameraRotation = {
-         math.random(-30, 10), -- x rotation is up/down, to link with Z position
-         math.random(-40, 40), -- y rotation is left/right
+         math.random(-15, 10), -- x rotation is up/down, to link with Z position
+         math.random(-30, 30), -- y rotation is left/right
          0
       }
    end
