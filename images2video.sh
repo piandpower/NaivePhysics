@@ -19,6 +19,12 @@
 # Convert the png files in a directory into a mp4 video using avconv
 #
 
+# make sure avconv is installed
+[ -z $(which avconv 2> /dev/null) ] \
+    && echo "Error: avconv not installed on your system." \
+    && echo "Please run 'sudo apt-get install libav-tools'" \
+    && exit 1
+
 # remove any trailing slash
 data_dir=${1%/}
 
@@ -37,7 +43,7 @@ png=$(ls $data_dir/*.png 2> /dev/null)
 # display error message if no png in the directory
 [ -z "$png" ] && echo "Error: no png file in $data_dir" && exit 1
 
-# get the first png file in the luist
+# get the first png file in the list
 first=$(echo $png | cut -f1 -d' ')
 
 # find the length of the images index (just consider the first png, we
