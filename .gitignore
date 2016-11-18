@@ -67,3 +67,4 @@ activate-naivephysics
 data/*
 *.json
 !exemple.json
+/core
