@@ -1,3 +1,6 @@
+-- This module defines possible materials for the ground, the walls
+-- and the spheres. It also defines a function setup a given actor
+-- with a given material.
 local uetorch = require 'uetorch'
 local material = {}
 
@@ -23,7 +26,6 @@ material.sphere_materials = {
    "BlackMaterial",
    "GreenMaterial",
    "M_ColorGrid_LowSpec",
-   -- "M_Glass",
    "M_Metal_Brushed_Nickel",
    "M_Metal_Burnished_Steel",
    "M_Metal_Chrome",
@@ -55,17 +57,6 @@ function material.SetActorMaterial(actor, id)
    local materialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
    local material = UE.LoadObject(Material.Class(), nil, materialId)
    uetorch.SetMaterial(actor, material)
-end
-
-
-local function test_materials()
-   for m in material.wall_materials do
-      local materialId = "Material'/Game/StarterContent/Materials/" .. id .. "." .. id .. "'"
-      local material = UE.LoadObject(Material.Class(), nil, materialId)
-      if not material then
-         print(id .. ' unknown')
-      end
-   end
 end
 
 

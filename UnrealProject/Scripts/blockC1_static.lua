@@ -2,9 +2,9 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
+local camera = require 'camera'
 local block = {}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
 local sphere2 = uetorch.GetActor("Sphere9_4")
@@ -67,7 +67,11 @@ end
 local function WallRotationUp(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
    uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
-   uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -350, 20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+
+   uetorch.SetActorLocation(
+      wall, 100 - 200 * params.scaleW, -350,
+      20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
+
    if angle >= 90 then
       utils.RemoveTickHook(WallRotationUp)
       utils.AddTickHook(RemainUp)
@@ -123,6 +127,12 @@ local function GetRandomParams()
       n = math.random(1,3)
    }
    params.index = math.random(1, params.n)
+
+   -- Pick random coordinates for the camera only for train
+   if iterationType == -1 then
+      params.cameraLocation = camera.randomLocation()
+      params.cameraRotation = camera.randomRotation()
+   end
 
    return params
 end
@@ -216,7 +226,7 @@ end
 
 function block.RunBlock()
    --camera
-   uetorch.SetActorLocation(camera, 100, 30, 80)
+   camera.setup(iterationType, 100, params.cameraLocation, params.cameraRotation)
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])

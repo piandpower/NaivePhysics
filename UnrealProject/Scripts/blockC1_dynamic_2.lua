@@ -2,9 +2,9 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
+local camera = require 'camera'
 local block = {}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
 local sphere2 = uetorch.GetActor("Sphere9_4")
@@ -160,6 +160,12 @@ local function GetRandomParams()
    }
    params.index = math.random(1, params.n)
 
+   -- Pick random coordinates for the camera only for train
+   if iterationType == -1 then
+      params.cameraLocation = camera.randomLocation()
+      params.cameraRotation = camera.randomRotation()
+   end
+
    return params
 end
 
@@ -254,7 +260,7 @@ end
 
 function block.RunBlock()
    -- camera
-   uetorch.SetActorLocation(camera, 150, 30, 80)
+   camera.setup(iterationType, 150, params.cameraLocation, params.cameraRotation)
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])

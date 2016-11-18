@@ -2,9 +2,9 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
+local camera = require 'camera'
 local block = {}
 
-local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_4")
 local sphere2 = uetorch.GetActor("Sphere9_4")
@@ -137,17 +137,10 @@ local function GetRandomParams()
    }
    params.index = math.random(1, params.n)
 
+   -- Pick random coordinates for the camera only for train
    if iterationType == -1 then
-      params.cameraPosition = {
-         math.random(-50, 50),
-         math.random(-100, 0),
-         math.random(-10, 50)
-      }
-      params.cameraRotation = {
-         math.random(-15, 10), -- x rotation is up/down, to link with Z position
-         math.random(-30, 30), -- y rotation is left/right
-         0
-      }
+      params.cameraLocation = camera.randomLocation()
+      params.cameraRotation = camera.randomRotation()
    end
 
    return params
@@ -235,23 +228,7 @@ end
 
 function block.RunBlock()
    -- camera
-   if iterationType == -1 then  -- train with random camera postion/orientation
-      print('camera X shift = ' .. params.cameraPosition[1] .. ' ' .. params.cameraRotation[1])
-      uetorch.SetActorLocation(
-         camera,
-         100 + params.cameraPosition[1],
-         30 + params.cameraPosition[2],
-         80 + params.cameraPosition[3])
-
-      uetorch.SetActorRotation(
-         camera,
-         0 + params.cameraRotation[1],
-         -90 + params.cameraRotation[2],
-         0 + params.cameraRotation[3])
-   else
-      uetorch.SetActorLocation(camera, 100, 30, 80)
-      uetorch.SetActorRotation(camera, 0, -90, 0)
-   end
+   camera.setup(iterationType, 100, params.cameraLocation, params.cameraRotation)
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
