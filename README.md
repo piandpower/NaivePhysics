@@ -26,20 +26,22 @@ not been tested.
         ./Setup.sh
 
   This takes a while: it downloads and installs Lua, Torch, Unreal
-  Engine and UETorch in the `NaivePhysics`. It finally activates the
-  project environment in your `~/.bashrc`.
+  Engine and UETorch in the `NaivePhysics` directory. It finally
+  generates a `activate-naivephysics` script that load the project
+  environment, and sources it in your `~/.bashrc`.
 
-* The final step is to package the `NaivePhysics` project into a
-  standalone binary. We provide the `build_package.sh` for doing that,
-  but the first time (i.e. right after a compilation from scratch) it
-  seems not to work.
+* The final step is to package the
+  `NaivePhysics/NaivePhysics.uproject` project into a standalone
+  binary. We provide the `build_package.sh` for doing that, but the
+  first time (i.e. right after a compilation from scratch) it seems
+  not to work.
 
   So you need a manual intervention in the editor. Open it with:
 
         ./naivedata.py exemple.json ./data --editor
 
   In the *File/Package Project* menu, select the *Linux* target and
-  `./NaivePhysics/Package` as the package directory. This operation
+  `./UnrealProject/Package` as the package directory. This operation
   takes a while.
 
   ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
@@ -56,7 +58,7 @@ generate data. To discover it, have a:
 
 If the 3D scene generated seems to be frozen (the spheres are moving
 but the wall remains in the 'down' position for a while), there is a
-problem with the packaged `NaivePhysics` binary.
+problem with the packaged binary.
 
 Try to repackage it with the `build_package.sh` script or within the
 UnrealEngine editor.
@@ -86,7 +88,7 @@ UETorch:
 * **Tick**: replaces UETorch's Tick function, taken from utils.lua.
 
 
-## Configuration script
+### Configuration script
 
 The **config.lua** file gives an easy way to configure the following
 properties of the simulations:
@@ -111,7 +113,7 @@ properties of the simulations:
 Also provides some functions that allow access to these properties.
 
 
-## Blocks' scripts
+### Blocks' scripts
 
 Each block script independently sets the scenario for the simulation and should provide:
 
@@ -137,7 +139,7 @@ Each block script independently sets the scenario for the simulation and should 
   possible.
 
 
-## Utils' script (**utils.lua**)
+### Utils' script (**utils.lua**)
 
 * **SetActorMaterial** sets the material of a given actor from a fixed
   list of available materials.
@@ -151,14 +153,10 @@ Each block script independently sets the scenario for the simulation and should 
 
 ## Additional utils
 
-* **imageseq_to_video.py** : takes the obtained screen captures and
-  ouputs videos.
+* **images2video.sh** : converts a sequence of generated images into a
+  video.
 * **clean.sh** : deletes directories which aren't necessary to rebuild
   the game.
-* **copy_training.sh** : goes through some of the generated scenarios
-  and copy the possible cases.
-* **copy_testing.sh** : goes throught some of the generated scenarios
-  and copy the possible and impossible cases.
 
 
 ## License
