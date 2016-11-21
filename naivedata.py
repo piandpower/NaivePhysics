@@ -32,6 +32,9 @@ To see command-line arguments, have a::
 """
 
 import argparse
+import copy
+import joblib
+import json
 import logging
 import os
 import re
@@ -65,7 +68,6 @@ JSON_EXEMPLE = '''
 
 # blocks actually implemented in the lua scripts
 BLOCKS_AVAILABLE = ['blockC1_static', 'blockC1_dynamic_1', 'blockC1_dynamic_2']
-
 
 # path to packaged the NaivePhysics binary (environment variable has
 # been setup in activate-naivephysics)
@@ -169,48 +171,110 @@ def ParseArgs():
 
     parser = argparse.ArgumentParser(
         description='Data generator for the NaivePhysics project',
-        epilog='An exemple of a JSon configuration file is:\n{}'
+        epilog='An exemple of a json configuration file is:\n{}'
         .format(JSON_EXEMPLE),
         formatter_class=CustomFormatter)
 
     parser.add_argument(
         'config_file', metavar='<json-file>', help=(
-            'JSon configuration file defining the number of test and train '
-            'iterations to run for each block. Supported blocks are: {}.'
+            'json configuration file defining the number of test and train '
+            'iterations to run for each block, supported blocks are: {}.'
             .format(', '.join(BLOCKS_AVAILABLE))))
 
     parser.add_argument(
         'output_dir', metavar='<output-dir>', help='''
-        Directory where to write generated data, must be non-existing
+        directory where to write generated data, must be non-existing
         or used along with the --force option.''')
 
     parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help='display all the UnrealEngine log messages')
+
+    parser.add_argument(
         '-s', '--seed', default=None, metavar='<int>',
-        help='Optional random seed for data generator, '
+        help='optional random seed for data generator, '
         'by default use the current system time')
 
     parser.add_argument(
         '-f', '--force', action='store_true',
-        help='Overwrite <output-dir>, any existing content is erased')
+        help='overwrite <output-dir>, any existing content is erased')
 
     parser.add_argument(
-        '-v', '--verbose', action='store_true',
-        help='Display all the UnrealEngine log messages')
+        '-j', '--njobs', type=int, default=1, metavar='<int>',
+        help='''number of data generation to run in parallel,
+        this option is ignored if --editor is specified''')
 
     parser.add_argument(
         '--editor', action='store_true',
-        help='Launch the NaivePhysics project in the UnrealEngine editor')
+        help='launch the NaivePhysics project in the UnrealEngine editor')
 
     return parser.parse_args()
 
 
-def _Run(command, log):
-    print(command)
+def _BalanceConfig(config, n, log):
+    """Split the `config` into `n` parts returned as list of dicts"""
+    # count the number of runs and iterations defined in the json
+    total_iterations = 0
+    total_runs = 0
+    for k, v in config.iteritems():
+        # this is a rough approximation of the real workload, to
+        # refine it we must discriminate blocks and get nb ticks (120
+        # or 200) and nb of test iterations (5 or 6)
+        total_iterations += v['train']
+        total_iterations += v['test'] * 5
+
+        total_runs += v['test'] + v['train']
+
+    log.debug(
+        'The json file defines a total of %s iterations for %s runs',
+        total_iterations, total_runs)
+
+    target_iterations = total_iterations / n
+    log.debug('Will run %s iterations per subprocess', target_iterations)
+
+    # create an empty config as a pattern for the new ones
+    empty_json = copy.deepcopy(config)
+    for k, v in empty_json.iteritems():
+        v['train'] = 0
+        v['test'] = 0
+
+    # create the sub-configs
+    subconfigs = []
+    for i in range(1, n + 1):
+        subconf = copy.deepcopy(empty_json)
+        sub_iterations = 0
+        while sub_iterations < target_iterations:
+            sum_it = 0
+            for k, v in config.iteritems():
+                for kind in ('test', 'train'):
+                    if v[kind] != 0:
+                        sum_it += v[kind]
+                        subconf[k][kind] += 1
+                        v[kind] -= 1
+                        sub_iterations += 1 if kind == 'train' else 5
+            if sum_it == 0:
+                break
+
+        subconfigs.append(subconf)
+
+    return subconfigs
+
+
+def _Run(command, log, config_file, output_dir, seed=None):
+    # setup the environment variables used in lua scripts
+    environ = {}
+    environ['NAIVEPHYSICS_DATA'] = os.path.abspath(output_dir)
+    environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
+    if seed is not None:
+        environ['NAIVEPHYSICS_SEED'] = seed
+    environ = copy.deepcopy(os.environ).update(environ)
+
     job = subprocess.Popen(
         shlex.split(command),
         stdin=None,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+        stderr=subprocess.STDOUT,
+        env=environ)
 
     # join the command output to log (from
     # https://stackoverflow.com/questions/35488927)
@@ -228,23 +292,60 @@ def _Run(command, log):
     job.wait()
 
     if job.returncode:
-        log.error('%s returned with %s',
-                  os.path.basename(NAIVEPHYSICS_BINARY),
-                  job.returncode)
+        log.error('command "%s" returned with %s', command, job.returncode)
         sys.exit(job.returncode)
 
 
-def RunBinary(log):
-    """Run the NaivePhysics packaged binary as a subprocess"""
+def RunBinary(log, output_dir, config_file, seed=None, njobs=1):
+    """Run the NaivePhysics packaged binary as a subprocess
+
+    If `njobs` is greater than 1, split the json configuration file
+    into subparts of equivalent workload and run several jobs in
+    parallel
+
+    """
+    if type(njobs) is not int or njobs < 1:
+        raise IOError('njobs argument must be a strictly positive integer')
+
     if not os.path.isfile(NAIVEPHYSICS_BINARY):
         raise IOError('No such file: {}'.format(NAIVEPHYSICS_BINARY))
 
-    log.debug('running {}'.format(os.path.basename(NAIVEPHYSICS_BINARY)))
+    if not os.path.isfile(config_file):
+        raise IOError('Json file not found: {}'.format(config_file))
 
-    _Run(NAIVEPHYSICS_BINARY, log)
+    log.debug('running {}{}'.format(
+        os.path.basename(NAIVEPHYSICS_BINARY),
+        '' if njobs == 1 else ' in {} parallel subprocesses'.format(njobs)))
+
+    if njobs == 1:
+        _Run(NAIVEPHYSICS_BINARY, log, config_file, output_dir, seed)
+    else:
+        # split the json configuration file into balanced subparts
+        subconfigs = _BalanceConfig(
+            json.load(open(config_file, 'r')), njobs, log)
+
+        # write them in subdirectories
+        for i, config in enumerate(subconfigs, 1):
+            path = os.path.join(output_dir, str(i))
+            os.makedirs(path)
+            open(os.path.join(path, 'config.json'), 'w').write(
+                json.dumps(config, indent=4))
+
+        # define arguments list for joblib
+        _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
+        _conf = [os.path.join(output_dir, str(i), 'config.json')
+                 for i in range(1, njobs+1)]
+        _seed = [None if seed is None else seed + i - 1
+                 for i in range(1, njobs+1)]
+
+        # run the subprocesses
+        joblib.Parallel(n_jobs=njobs, backend='threading')(
+            joblib.delayed(_Run)(
+                NAIVEPHYSICS_BINARY, log, _conf[i], _out[i], _seed[i])
+            for i in range(njobs))
 
 
-def RunEditor(log):
+def RunEditor(log, output_dir, config_file, seed=None):
     """Run the NaivePhysics project within the UnrealEngine editor"""
 
     editor = os.path.join(
@@ -259,7 +360,7 @@ def RunEditor(log):
 
     log.debug('running NaivePhysics in the Unreal Engine editor')
 
-    _Run(editor + ' ' + project, log)
+    _Run(editor + ' ' + project, log, config_file, output_dir, seed)
 
 
 def Main():
@@ -277,22 +378,18 @@ def Main():
         else:
             raise IOError(
                 'Existing output directory: {}'.format(output_dir))
-
     os.makedirs(output_dir)
 
-    # setup the environment variables used in lua scripts
-    os.environ['NAIVEPHYSICS_DATA'] = output_dir
-    os.environ['NAIVEPHYSICS_JSON'] = os.path.abspath(args.config_file)
-    if args.seed is not None:
-        os.environ['NAIVEPHYSICS_SEED'] = args.seed
-
-    # finally setup the log and run the simulation
+    # setup the logger
     log = GetLogger(verbose=args.verbose)
 
+    # run the simulation either in the editor or as a standalone
+    # program
     if args.editor:
-        RunEditor(log)
+        RunEditor(log, output_dir, args.config_file, args.seed)
     else:
-        RunBinary(log)
+        RunBinary(log, output_dir, args.config_file,
+                  seed=args.seed, njobs=args.njobs)
 
 
 if __name__ == '__main__':

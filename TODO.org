@@ -5,9 +5,6 @@ TODO list for the NaivePhysics project
 ** random camera position
 * data dir
 ** refactor status.txt
-* packaging
-** make a docker?
-** parallel runs from Python? (--njobs option)
 * blocks
 ** a bug in C1_dynamic_1?
    Sometimes the main actor move slower in 2nd than in 1st iteration ???
