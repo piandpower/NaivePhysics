@@ -82,6 +82,7 @@ function SetIterationsCounter()
       Exit()
    end
    print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
+   print("write data to " .. conf.dataPath)
 
    -- put the detail of each iteration into a table
    local n, id_train, id_test, iterationsTable = 1, 1, 1, {}

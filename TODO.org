@@ -11,3 +11,6 @@ TODO list for the NaivePhysics project
 ** optimize checks in C1_dynamic_1
    -> detect failures right after iterationType 5, not after the whole run!!
    -> as its done in C1_dynamic_2 block
+* run on a headless cluster
+** The problem is remote openGl rendering, see http://www.virtualgl.org
+** with DISPLAY=:0 that works

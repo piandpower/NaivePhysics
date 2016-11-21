@@ -43,6 +43,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 
 # an exemple of a config file to feed the NaivePhysics data generator
@@ -132,23 +133,27 @@ class LogInhibitUnrealFilter(logging.Filter):
                 'LogScriptPlugin' in msg)
 
 
-def GetLogger(verbose=False):
+def GetLogger(verbose=False, name=None):
     """Returns a logger configured to filter Unreal log messages
 
     If `verbose` is True, do not filter any message, if `verbose` is
-    False (default), keep only relevant messages)
+    False (default), keep only relevant messages).
+
+    If `name` is not None, prefix all messages with it.
 
     """
-    log = logging.getLogger('NaivePhysics')
+    msg = '{}%(message)s'.format('{}: '.format(name) if name else '')
+
+    log = logging.getLogger(name)
     log.setLevel(logging.DEBUG)
     log.addFilter(LogNoEmptyMessageFilter())
 
     if not verbose:
         log.addFilter(LogInhibitUnrealFilter())
         log.addFilter(LogNoStartupMessagesFilter())
-        formatter = LogUnrealFormatter('%(message)s')
+        formatter = LogUnrealFormatter(msg)
     else:
-        formatter = LogStripFormatter('%(message)s')
+        formatter = LogStripFormatter(msg)
 
     # log to standard output
     std_handler = logging.StreamHandler(sys.stdout)
@@ -191,7 +196,7 @@ def ParseArgs():
         help='display all the UnrealEngine log messages')
 
     parser.add_argument(
-        '-s', '--seed', default=None, metavar='<int>',
+        '-s', '--seed', default=None, metavar='<int>', type=int,
         help='optional random seed for data generator, '
         'by default use the current system time')
 
@@ -211,7 +216,7 @@ def ParseArgs():
     return parser.parse_args()
 
 
-def _BalanceConfig(config, n, log):
+def _BalanceConfig(config, njobs):
     """Split the `config` into `n` parts returned as list of dicts"""
     # count the number of runs and iterations defined in the json
     total_iterations = 0
@@ -225,12 +230,16 @@ def _BalanceConfig(config, n, log):
 
         total_runs += v['test'] + v['train']
 
-    log.debug(
-        'The json file defines a total of %s iterations for %s runs',
-        total_iterations, total_runs)
+    print('The json file defines a total of {} iterations for {} runs'
+          .format(total_iterations, total_runs))
 
-    target_iterations = total_iterations / n
-    log.debug('Will run %s iterations per subprocess', target_iterations)
+    if njobs > total_runs:
+        print('reducing the number of jobs to {} (number of runs)'
+              .format(total_runs))
+        njobs = total_runs
+
+    target_iterations = total_iterations / njobs
+    print('Will run {} iterations per job'.format(target_iterations))
 
     # create an empty config as a pattern for the new ones
     empty_json = copy.deepcopy(config)
@@ -240,7 +249,7 @@ def _BalanceConfig(config, n, log):
 
     # create the sub-configs
     subconfigs = []
-    for i in range(1, n + 1):
+    for i in range(1, njobs + 1):
         subconf = copy.deepcopy(empty_json)
         sub_iterations = 0
         while sub_iterations < target_iterations:
@@ -257,17 +266,38 @@ def _BalanceConfig(config, n, log):
 
         subconfigs.append(subconf)
 
-    return subconfigs
+    return subconfigs, njobs
 
 
 def _Run(command, log, config_file, output_dir, seed=None):
+    """Run `command` as a subprocess
+
+    The `command` stdout and stderr are forwarded to `log`. The
+    `command` runs with the following environment variables, in top of
+    the current environment:
+
+    NAIVEPHYSICS_JSON is the absolute path to `config_file`.
+
+    NAIVEPHYSICS_DATA is the absolute path to `output_dir` with a
+       trailing slash added.
+
+    NAIVEPHYSICS_SEED is `seed`.
+
+    """
+    # get the output directory as absolute path with a trailing /,
+    # this is required by lua scripts
+    output_dir = os.path.abspath(output_dir)
+    if output_dir[-1] != '/':
+        output_dir += '/'
+
+    # TODO check the config_file has no error -> json parser
+
     # setup the environment variables used in lua scripts
-    environ = {}
-    environ['NAIVEPHYSICS_DATA'] = os.path.abspath(output_dir)
+    environ = copy.deepcopy(os.environ)
+    environ['NAIVEPHYSICS_DATA'] = output_dir
     environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
     if seed is not None:
         environ['NAIVEPHYSICS_SEED'] = seed
-    environ = copy.deepcopy(os.environ).update(environ)
 
     job = subprocess.Popen(
         shlex.split(command),
@@ -296,7 +326,7 @@ def _Run(command, log, config_file, output_dir, seed=None):
         sys.exit(job.returncode)
 
 
-def RunBinary(log, output_dir, config_file, seed=None, njobs=1):
+def RunBinary(output_dir, config_file, njobs=1, seed=None, verbose=False):
     """Run the NaivePhysics packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
@@ -313,16 +343,18 @@ def RunBinary(log, output_dir, config_file, seed=None, njobs=1):
     if not os.path.isfile(config_file):
         raise IOError('Json file not found: {}'.format(config_file))
 
-    log.debug('running {}{}'.format(
+    print('running {}{}'.format(
         os.path.basename(NAIVEPHYSICS_BINARY),
-        '' if njobs == 1 else ' in {} parallel subprocesses'.format(njobs)))
+        '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     if njobs == 1:
-        _Run(NAIVEPHYSICS_BINARY, log, config_file, output_dir, seed)
+        _Run(NAIVEPHYSICS_BINARY,
+             GetLogger(verbose=verbose),
+             config_file, output_dir, seed=seed)
     else:
         # split the json configuration file into balanced subparts
-        subconfigs = _BalanceConfig(
-            json.load(open(config_file, 'r')), njobs, log)
+        subconfigs, njobs = _BalanceConfig(
+            json.load(open(config_file, 'r')), njobs)
 
         # write them in subdirectories
         for i, config in enumerate(subconfigs, 1):
@@ -331,22 +363,28 @@ def RunBinary(log, output_dir, config_file, seed=None, njobs=1):
             open(os.path.join(path, 'config.json'), 'w').write(
                 json.dumps(config, indent=4))
 
+        # parallel must defines a different seed for each job
+        seed = int(round(time.time() * 1000)) if seed is None else seed
+
         # define arguments list for joblib
         _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
         _conf = [os.path.join(output_dir, str(i), 'config.json')
                  for i in range(1, njobs+1)]
-        _seed = [None if seed is None else seed + i - 1
+        _seed = [None if seed is None else str(seed + i - 1)
                  for i in range(1, njobs+1)]
+        _log = [GetLogger(name='job {}'.format(i))
+                for i in range(1, njobs+1)]
 
         # run the subprocesses
         joblib.Parallel(n_jobs=njobs, backend='threading')(
             joblib.delayed(_Run)(
-                NAIVEPHYSICS_BINARY, log, _conf[i], _out[i], _seed[i])
+                NAIVEPHYSICS_BINARY, _log[i], _conf[i], _out[i], seed=_seed[i])
             for i in range(njobs))
 
 
-def RunEditor(log, output_dir, config_file, seed=None):
+def RunEditor(output_dir, config_file, seed=None, verbose=False):
     """Run the NaivePhysics project within the UnrealEngine editor"""
+    log = GetLogger(verbose=verbose)
 
     editor = os.path.join(
         UNREALENGINE_ROOT, 'Engine', 'Binaries', 'Linux', 'UE4Editor')
@@ -360,16 +398,13 @@ def RunEditor(log, output_dir, config_file, seed=None):
 
     log.debug('running NaivePhysics in the Unreal Engine editor')
 
-    _Run(editor + ' ' + project, log, config_file, output_dir, seed)
+    _Run(editor + ' ' + project, log, config_file, output_dir, seed=seed)
 
 
 def Main():
     args = ParseArgs()
 
-    # get the output directory as absolute path with a trailing /
     output_dir = os.path.abspath(args.output_dir)
-    if output_dir[-1] != '/':
-        output_dir += '/'
 
     # setup an empty output directory
     if os.path.exists(output_dir):
@@ -380,16 +415,14 @@ def Main():
                 'Existing output directory: {}'.format(output_dir))
     os.makedirs(output_dir)
 
-    # setup the logger
-    log = GetLogger(verbose=args.verbose)
-
     # run the simulation either in the editor or as a standalone
     # program
     if args.editor:
-        RunEditor(log, output_dir, args.config_file, args.seed)
+        RunEditor(output_dir, args.config_file,
+                  seed=args.seed, verbose=args.verbose)
     else:
-        RunBinary(log, output_dir, args.config_file,
-                  seed=args.seed, njobs=args.njobs)
+        RunBinary(output_dir, args.config_file,
+                  njobs=args.njobs, seed=args.seed, verbose=args.verbose)
 
 
 if __name__ == '__main__':
