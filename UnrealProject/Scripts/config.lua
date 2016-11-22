@@ -1,3 +1,4 @@
+local uetorch = require 'uetorch'
 local json = require 'cjson'
 local config = {}
 
@@ -79,7 +80,8 @@ function SetIterationsCounter()
 
    if test_runs + train_runs == 0 then
       print('no iterations specified, exiting')
-      Exit()
+      uetorch.ExecuteConsoleCommand('Exit')
+      return
    end
    print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
    print("write data to " .. conf.dataPath)
