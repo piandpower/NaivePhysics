@@ -1,16 +1,32 @@
 TODO list for the NaivePhysics project
 
 * variability
-** random light position/number
-** random camera position
-* data dir
-** refactor status.txt
+** random cloud position/orientaion/speed
+** random light position/number -> variable shadows
+** random camera position -> random position, constrained orientation
+** for now all spheres/walls have the same material within a run, is it ok?
+* configuration file
+** should be better/simpler with a randomization in python
+   thus the json would have one entry per run, all parameters already fixed
 * blocks
+** add a little delay (3 to 4 ticks?) because textures take time to be correctly displayed
+   also the first image is all black!
+** is the motion blur a problem?
+   see https://answers.unrealengine.com/questions/17881/graphic-settings-disable-motion-blur.html
 ** a bug in C1_dynamic_1?
    Sometimes the main actor move slower in 2nd than in 1st iteration ???
 ** optimize checks in C1_dynamic_1
    -> detect failures right after iterationType 5, not after the whole run!!
-   -> as its done in C1_dynamic_2 block
+   -> as done in C1_dynamic_2 block
+* data dir
+** format params.json to have spaces and new lines
+** refactor status.txt
+** bug: depth images are binary !!
+** do we need depth for train samples?
+   If so there is a bug because all actors are visible on depth but not in scene
 * run on a headless cluster
-** The problem is remote openGl rendering, see http://www.virtualgl.org
-** with DISPLAY=:0 that works
+** The problem is remote openGl rendering
+** with DISPLAY=:0 that works remotely but corrupt the host's X server!
+** http://www.virtualgl.org can be a solution
+* parallel pathway
+** fix the bug in balancing jsons
