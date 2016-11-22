@@ -6,15 +6,14 @@ local utils = require 'utils'
 local block
 
 
+-- Force the rendered image to be 512x288 (16:9 ratio)
 function SetResolution(dt)
-   uetorch.SetResolution(512, 288) -- keep the 16:9 proportion
+   uetorch.SetResolution(512, 288)
 end
 
 
-SetResolution()
 uetorch.SetTickDeltaBounds(1/8, 1/8)
 math.randomseed(os.getenv('NAIVEPHYSICS_SEED') or os.time())
-
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
@@ -22,6 +21,7 @@ RunBlock = nil
 
 -- replace uetorch's Tick function
 Tick = utils.Tick
+
 
 local iterationId, iterationType, iterationBlock, iterationPath
 
@@ -43,13 +43,14 @@ local function SaveScreen(dt)
       end
 
       local file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
-      local file2 = iterationPath .. 'depth/depth_' .. stepStr .. '.txt'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
       local i2 = uetorch.DepthField(camera)
 
       if i2 then
+         -- normalize the depth field in [0, 1]
+         local max = i2:max()
+         i2:apply(function(x) return x/max end)
          image.save(file, i2)
-         torch.save(file2, i2, 'ascii')
       end
 
       tLastSaveScreen = tSaveScreen

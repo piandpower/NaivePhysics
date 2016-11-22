@@ -64,7 +64,7 @@ torch/*
 activate-naivephysics
 
 # Data directory and json configuration files
-data/*
+data*/*
 *.json
 !exemple.json
 /core

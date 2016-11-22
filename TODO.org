@@ -1,15 +1,24 @@
 TODO list for the NaivePhysics project
 
+* after ED
+** no pulsing spheres
+** train
+*** mask, depth and scene
+*** check at least one object visible and one occlusion
+*** random trajectories (not only parallel, we want hits!)
+*** random spheres and walls
+** deliverable
+*** either a web page (with gif?) or a repo with avi.
+*** about 6 for test and 12 for train
 * bugs
-** depth images are binary in png, not good in jpeg
-   try to dump them in csv and postprocess them as images?
-** do we need depth for train samples?
+** do we need depth for train samples? YES
    If so there is a bug because all actors are visible on depth but not in scene
-** a bug in C1_dynamic_1?
+** a minor bug in C1_dynamic_1?
    Sometimes the main actor move slower in 2nd than in 1st iteration?
    Lead to a check failure in all cases but this is a waste of time
    and resources
 * Python side
+** test -j2 and -j3
 ** fix the bug in balancing jsons
 ** should be better/simpler with a randomization in python
    thus the json would have one entry per run, all parameters already fixed
@@ -17,7 +26,7 @@ TODO list for the NaivePhysics project
 ** variability
 *** random cloud position/orientaion/speed
 *** random light position/number -> variable shadows
-*** random camera position -> random position, constrained orientation
+*** random camera position -> random position and point of view, constrained orientation
 *** for now all spheres/walls have the same material within a run, is it ok?
 ** add a little delay (3 to 4 ticks?) because textures take time to be correctly displayed
    also the first image is all black!
