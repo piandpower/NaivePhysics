@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #
-# Convert the png files in a directory (and recursivly in
+# Convert the jpeg files in a directory (and recursivly in
 # subdirectories) into a mp4 video using avconv (one video per
 # directory). This also create a m3u playlist of the generated videos
 # in $data_dir
@@ -37,33 +37,33 @@ data_dir=$(readlink -f ${1%/})
 # display error message if input is not a directory
 [ ! -d "$data_dir" ] && echo "Error: $data_dir is not a directory"  && exit 1
 
-# list all subdirectories containing at least one png file
-png_dirs=$(find $data_dir -type f -name "*.png" -exec dirname {} \; | uniq)
+# list all subdirectories containing at least one jpeg file
+jpeg_dirs=$(find $data_dir -type f -name "*.jpeg" -exec dirname {} \; | uniq)
 
-# display error message if no png found
-[ -z "$png_dirs" ] && echo "Error: no png file in $data_dir" && exit 1
+# display error message if no jpeg found
+[ -z "$jpeg_dirs" ] && echo "Error: no jpeg file in $data_dir" && exit 1
 
 rm -f $data_dir/playlist.m3u
-for dir in $png_dirs;
+for dir in $jpeg_dirs;
 do
-    # list all png images in the directory
-    png=$(ls $dir/*.png 2> /dev/null)
+    # list all jpeg images in the directory
+    jpeg=$(ls $dir/*.jpeg 2> /dev/null)
 
-    # get the first png file in the list
-    first=$(echo $png | cut -f1 -d' ')
+    # get the first jpeg file in the list
+    first=$(echo $jpeg | cut -f1 -d' ')
 
-    # find the length of the images index (just consider the first png, we
+    # find the length of the images index (just consider the first jpeg, we
     # assume they all have same index length)
-    index=$(echo $first | sed -r 's|^.+_([0-9]+)\.png$|\1|g')
+    index=$(echo $first | sed -r 's|^.+_([0-9]+)\.jpeg$|\1|g')
     n=${#index}
 
-    # png files basename, with extension and index removed
-    base=$(basename $first | sed -r 's|^(.+_)[0-9]+\.png$|\1|g')
+    # jpeg files basename, with extension and index removed
+    base=$(basename $first | sed -r 's|^(.+_)[0-9]+\.jpeg$|\1|g')
 
-    # the global pattern matching png files for avconv
-    pattern=$(echo $dir/$base%0${n}d.png)
+    # the global pattern matching jpeg files for avconv
+    pattern=$(echo $dir/$base%0${n}d.jpeg)
 
-    # convert the png images into a video.avi
+    # convert the jpeg images into a video.avi
     avconv -y -framerate 24 -i $pattern -c:v libx264 -r 30 -pix_fmt yuv420p $dir/video.avi \
         || (echo "Error: failed to write video from $pattern"; exit 1)
 

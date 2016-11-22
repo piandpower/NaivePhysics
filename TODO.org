@@ -1,32 +1,34 @@
 TODO list for the NaivePhysics project
 
-* variability
-** random cloud position/orientaion/speed
-** random light position/number -> variable shadows
-** random camera position -> random position, constrained orientation
-** for now all spheres/walls have the same material within a run, is it ok?
-* configuration file
+* bugs
+** depth images are binary in png, not good in jpeg
+   try to dump them in csv and postprocess them as images?
+** do we need depth for train samples?
+   If so there is a bug because all actors are visible on depth but not in scene
+** a bug in C1_dynamic_1?
+   Sometimes the main actor move slower in 2nd than in 1st iteration?
+   Lead to a check failure in all cases but this is a waste of time
+   and resources
+* Python side
+** fix the bug in balancing jsons
 ** should be better/simpler with a randomization in python
    thus the json would have one entry per run, all parameters already fixed
-* blocks
+* lua/engine side
+** variability
+*** random cloud position/orientaion/speed
+*** random light position/number -> variable shadows
+*** random camera position -> random position, constrained orientation
+*** for now all spheres/walls have the same material within a run, is it ok?
 ** add a little delay (3 to 4 ticks?) because textures take time to be correctly displayed
    also the first image is all black!
 ** is the motion blur a problem?
    see https://answers.unrealengine.com/questions/17881/graphic-settings-disable-motion-blur.html
-** a bug in C1_dynamic_1?
-   Sometimes the main actor move slower in 2nd than in 1st iteration ???
 ** optimize checks in C1_dynamic_1
    -> detect failures right after iterationType 5, not after the whole run!!
    -> as done in C1_dynamic_2 block
-* data dir
 ** format params.json to have spaces and new lines
 ** refactor status.txt
-** bug: depth images are binary !!
-** do we need depth for train samples?
-   If so there is a bug because all actors are visible on depth but not in scene
 * run on a headless cluster
 ** The problem is remote openGl rendering
 ** with DISPLAY=:0 that works remotely but corrupt the host's X server!
 ** http://www.virtualgl.org can be a solution
-* parallel pathway
-** fix the bug in balancing jsons

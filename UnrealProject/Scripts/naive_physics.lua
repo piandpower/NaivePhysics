@@ -35,19 +35,21 @@ local function SaveScreen(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
-      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.png'
+      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.jpeg'
       local i1 = uetorch.Screen()
 
       if i1 then
          image.save(file, i1)
       end
 
-      file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
+      local file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
+      local file2 = iterationPath .. 'depth/depth_' .. stepStr .. '.txt'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
       local i2 = uetorch.DepthField(camera)
 
       if i2 then
          image.save(file, i2)
+         torch.save(file2, i2, 'ascii')
       end
 
       tLastSaveScreen = tSaveScreen
@@ -130,7 +132,7 @@ local function SaveData()
    else
       -- TODO need to be refactored, better if we have a
       -- status/status_n.txt file per tick (to be consistent with
-      -- depth/scene folders)
+      -- depth/scene folders). Or at least a json structure as well
       local filename = iterationPath .. 'status.txt'
       local file = assert(io.open(filename, "w"))
       file:write("block = " .. iterationBlock .. "\n")
