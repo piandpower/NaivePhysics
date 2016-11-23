@@ -89,7 +89,7 @@ local function CheckVisibility(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
-      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
+      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
