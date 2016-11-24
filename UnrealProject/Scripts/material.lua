@@ -33,7 +33,6 @@ material.sphere_materials = {
    "M_Metal_Gold",
    "M_Metal_Rust",
    "M_Metal_Steel",
-   "M_Tech_Hex_Tile_Pulse",
    "M_Tech_Hex_Tile",
    "M_Tech_Panel",
 }
