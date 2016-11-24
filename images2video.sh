@@ -17,8 +17,8 @@
 
 #
 # Convert the jpeg files in a directory (and recursivly in
-# subdirectories) into a video (one video per directory and a m3u
-# playlist) or into a gif.
+# subdirectories) into a video or into a gif (one video per
+# directory).
 #
 
 # display a usage message if bad params
@@ -42,6 +42,11 @@ if [[ "$2" == *gif* ]]; then
         && echo "Error: convert not installed on your system." \
         && echo "Please run 'sudo apt-get install imagemagick'" \
         && exit 1
+
+    # generate a black image to be inserted at the beginning and end
+    # of each gif
+    convert -size 512x288 xc:black black.jpeg
+    trap "rm -rf black.jpeg" EXIT
 else
     format="video"
 
@@ -61,28 +66,25 @@ jpeg_dirs=$(find $data_dir -type f -name "*.jpeg" -exec dirname {} \; | uniq)
 # display error message if no jpeg found
 [ -z "$jpeg_dirs" ] && echo "Error: no jpeg file in $data_dir" && exit 1
 
-# overwrite any existing playlist
-rm -f $data_dir/playlist.m3u
-
 # process each jpeg directory
 for dir in $jpeg_dirs;
 do
+    # list all jpeg images in the directory
+    jpeg=$(ls $dir/*.jpeg 2> /dev/null)
+
+    # get the first jpeg file in the list
+    first=$(echo $jpeg | cut -f1 -d' ')
+
+    # find the length of the images index (just consider the first jpeg, we
+    # assume they all have same index length)
+    index=$(echo $first | sed -r 's|^.+_([0-9]+)\.jpeg$|\1|g')
+    n=${#index}
+
+    # jpeg files basename, with extension and index removed
+    base=$(basename $first | sed -r 's|^(.+_)[0-9]+\.jpeg$|\1|g')
+
     case $format in
         "video"*)
-            # list all jpeg images in the directory
-            jpeg=$(ls $dir/*.jpeg 2> /dev/null)
-
-            # get the first jpeg file in the list
-            first=$(echo $jpeg | cut -f1 -d' ')
-
-            # find the length of the images index (just consider the first jpeg, we
-            # assume they all have same index length)
-            index=$(echo $first | sed -r 's|^.+_([0-9]+)\.jpeg$|\1|g')
-            n=${#index}
-
-            # jpeg files basename, with extension and index removed
-            base=$(basename $first | sed -r 's|^(.+_)[0-9]+\.jpeg$|\1|g')
-
             # the global pattern matching jpeg files for avconv
             pattern=$(echo $dir/$base%0${n}d.jpeg)
 
@@ -90,17 +92,14 @@ do
             avconv -y -framerate 24 -i $pattern -c:v libx264 -r 30 -pix_fmt yuv420p $dir/video.avi \
                 || (echo "Error: failed to write video from $pattern"; exit 1)
             echo "Wrote $dir/video.avi"
-            echo "$dir/video.avi" >> $data_dir/playlist.m3u
             ;;
         "gif"*)
-            # convert the jpeg sequence to a video.gif
-            convert -delay 10 -loop 0 $dir/*.jpeg $dir/video.gif
+            # convert the jpeg sequence to a video.gif (with black at
+            # begin and end of the animation)
+            convert -delay 10 -loop 0 black.jpeg $dir/*.jpeg black.jpeg $dir/video.gif
             echo "Wrote $dir/video.gif"
-            echo "$dir/video.gif" >> $data_dir/playlist.m3u
             ;;
     esac
-
-
 done
 
 exit 0
