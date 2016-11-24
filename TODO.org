@@ -1,18 +1,16 @@
 TODO list for the NaivePhysics project
 
-* after ED
-** no pulsing spheres
-** train
-*** mask, depth and scene
-*** check at least one object visible and one occlusion
-*** random trajectories (not only parallel, we want hits!)
-*** random spheres and walls
-** deliverable
-*** either a web page (with gif?) or a repo with avi.
-*** about 6 for test and 12 for train
+* train, after ED
+** mask, depth and scene
+** check at least one object visible and one occlusion
+   a posteriori: just parse the status.txt
+** random trajectories (not only parallel, we want hits!)
+** random spheres and walls
+   walls with left/right rotations, mobile/immobile spheres
 * bugs
 ** do we need depth for train samples? YES
    If so there is a bug because all actors are visible on depth but not in scene
+   The same apply for mask
 ** a minor bug in C1_dynamic_1?
    Sometimes the main actor move slower in 2nd than in 1st iteration?
    Lead to a check failure in all cases but this is a waste of time
@@ -30,7 +28,7 @@ TODO list for the NaivePhysics project
 *** for now all spheres/walls have the same material within a run, is it ok?
 ** add a little delay (3 to 4 ticks?) because textures take time to be correctly displayed
    also the first image is all black!
-** is the motion blur a problem?
+** is the motion blur a problem? NOT NOW
    see https://answers.unrealengine.com/questions/17881/graphic-settings-disable-motion-blur.html
 ** optimize checks in C1_dynamic_1
    -> detect failures right after iterationType 5, not after the whole run!!
