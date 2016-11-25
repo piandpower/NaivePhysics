@@ -68,7 +68,7 @@ local function SaveScreen(dt)
          -- tick. If this is not the case, the following normalization
          -- isn't correct as the global_max varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
-         i2:apply(function(x) return x/max end)
+         i2:apply(function(x) return x / max_depth end)
          image.save(file, i2)
       end
 
@@ -96,6 +96,27 @@ local function SaveStatusToTable(dt)
    end
    tSaveText = tSaveText + dt
 end
+
+local tMask, tLastMask, stepMask = 0, 0, 0
+local function SaveMask(dt)
+   if tMask - tLastMask >= config.GetBlockCaptureInterval(iterationBlock) then
+      stepMask = stepMask + 1
+
+      local file = iterationPath .. 'mask/mask_' .. PadZeros(stepMask, 3) .. '.jpeg'
+      local actors = block.ActiveActors()
+      local i2 = uetorch.ObjectSegmentation(actors)
+
+      if i2 then
+         i2 = i2:float()  -- cast from int to float for normalization
+         i2:apply(function(x) return x / block.MaxActors() end)
+         image.save(file, i2)
+      end
+
+      tLastMask = tMask
+   end
+   tMask = tMask + dt
+end
+
 
 local visibilityTable = {}
 local tCheck, tLastCheck = 0, 0
@@ -245,7 +266,7 @@ function SetCurrentIteration()
       utils.AddEndTickHook(tweak)
 
       -- save the mask
-      utils.AddTickHook(CheckVisibility)
+      utils.AddTickHook(SaveMask)
    else  -- test
       utils.AddTickHook(block.SaveCheckInfo)
       utils.AddEndTickHook(block.Check)
