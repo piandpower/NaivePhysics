@@ -37,6 +37,7 @@ TORCH_LUA_VERSION=LUA52 ./install.sh -s
 source $TORCH_ROOT/install/bin/torch-activate
 luarocks install lua-cjson
 luarocks install paths
+luarocks install luaposix
 
 
 echo "Step 2: setup Unreal Engine and UETorch"

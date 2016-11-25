@@ -297,7 +297,7 @@ def _Run(command, log, config_file, output_dir, seed=None):
     environ['NAIVEPHYSICS_DATA'] = output_dir
     environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
     if seed is not None:
-        environ['NAIVEPHYSICS_SEED'] = seed
+        environ['NAIVEPHYSICS_SEED'] = str(seed)
 
     job = subprocess.Popen(
         shlex.split(command),

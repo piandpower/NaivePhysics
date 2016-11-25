@@ -1,9 +1,20 @@
 local uetorch = require 'uetorch'
 local paths = require 'paths'
 local image = require 'image'
+local posix = require 'posix'
 local config = require 'config'
 local utils = require 'utils'
 local block
+
+-- Return unique elements of `t` (equivalent to set(t) in
+-- Python). From https://stackoverflow.com/questions/20066835
+function Unique(t)
+   local hash, res = {}, {}
+   t:apply(function(x)
+         if not hash[x] then res[#res+1] = x; hash[x] = true end
+   end)
+   return res
+end
 
 
 -- Force the rendered image to be 512x288 (16:9 ratio)
@@ -13,7 +24,11 @@ end
 
 
 uetorch.SetTickDeltaBounds(1/8, 1/8)
-math.randomseed(os.getenv('NAIVEPHYSICS_SEED') or os.time())
+
+local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
+-- print('setup random seed to ' .. seed)
+math.randomseed(seed)
+posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
