@@ -48,11 +48,10 @@ local function SaveScreen(dt)
       local i2 = uetorch.DepthField(camera)
 
       if i2 then
-         -- normalize the depth field in [0, 1]. TODO max depth is for
-         -- the horizon line which is assumed to be visible at the
-         -- first tick. If this is not the case, the following
-         -- normalization isn't correct as the global_max varies
-         -- accross ticks.
+         -- normalize the depth field in [0, 1]. TODO max depth is the
+         -- horizon line, which is assumed to be visible at the first
+         -- tick. If this is not the case, the following normalization
+         -- isn't correct as the global_max varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
          i2:apply(function(x) return x/max end)
          image.save(file, i2)
@@ -70,7 +69,7 @@ local tLastSaveText = 0
 local function SaveStatusToTable(dt)
    local aux = {t = tSaveText}
    if tSaveText - tLastSaveText >= config.GetBlockCaptureInterval(iterationBlock) then
-      for k,v in pairs(block.actors) do
+      for k, v in pairs(block.actors) do
          aux[k] = {
             location = uetorch.GetActorLocation(v),
             rotation = uetorch.GetActorRotation(v)
@@ -198,9 +197,7 @@ function SetCurrentIteration()
    else
       paths.mkdir(iterationPath .. 'scene')
       paths.mkdir(iterationPath .. 'depth')
-      if iterationType == -1 then
-         paths.mkdir(iterationPath .. 'mask')
-      end
+      paths.mkdir(iterationPath .. 'mask')
    end
 
    -- prepare the block

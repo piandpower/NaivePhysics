@@ -38,7 +38,7 @@ not been tested.
 
   So you need a manual intervention in the editor. Open it with:
 
-        ./naivedata.py exemple.json ./data --editor
+        ./naivedata.py exemple.json ./data --editor --verbose
 
   In the *File/Package Project* menu, select the *Linux* target and
   `./UnrealProject/Package` as the package directory. This operation
@@ -52,7 +52,7 @@ not been tested.
 Once installed and packaged, use the `naivedata.py` program to
 generate data. To discover it, have a:
 
-    naivedata.py --help
+    ./naivedata.py --help
 
 ## Potential issue
 
@@ -154,7 +154,7 @@ Each block script independently sets the scenario for the simulation and should 
 ## Additional utils
 
 * **images2video.sh** : converts a sequence of generated images into a
-  video.
+  video or a gif file.
 * **clean.sh** : deletes directories which aren't necessary to rebuild
   the game.
 

@@ -44,7 +44,7 @@ if [[ "$2" == *gif* ]]; then
         && exit 1
 
     # generate a black image to be inserted at the beginning and end
-    # of each gif
+    # of each gif, delete it at exit
     convert -size 512x288 xc:black black.jpeg
     trap "rm -rf black.jpeg" EXIT
 else
