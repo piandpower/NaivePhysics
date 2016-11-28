@@ -389,12 +389,12 @@ def RunEditor(output_dir, config_file, seed=None, verbose=False):
     editor = os.path.join(
         UNREALENGINE_ROOT, 'Engine', 'Binaries', 'Linux', 'UE4Editor')
     if not os.path.isfile(editor):
-        raise IOError('No such file: {}'.format(editor))
+        raise IOError('No such file {}'.format(editor))
 
     project = os.path.join(
         NAIVEPHYSICS_ROOT, 'UnrealProject', 'NaivePhysics.uproject')
     if not os.path.isfile(project):
-        raise IOError('No such file: {}'.format(project))
+        raise IOError('No such file {}'.format(project))
 
     log.debug('running NaivePhysics in the Unreal Engine editor')
 
@@ -412,7 +412,7 @@ def Main():
             shutil.rmtree(output_dir)
         else:
             raise IOError(
-                'Existing output directory: {}'.format(output_dir))
+                'Existing output directory {}'.format(output_dir))
     os.makedirs(output_dir)
 
     # run the simulation either in the editor or as a standalone
@@ -428,6 +428,9 @@ def Main():
 if __name__ == '__main__':
     try:
         Main()
+    except IOError as err:
+        print('Fatal error, exiting: {}'.format(err))
+        sys.exit(-1)
     except KeyboardInterrupt:
         print('Keyboard interruption, exiting')
         sys.exit(0)

@@ -24,6 +24,7 @@ end
 
 uetorch.SetTickDeltaBounds(1/8, 1/8)
 
+-- TODO see if can put that in M.initialize()
 -- TODO need to preserve the seed (no reinitialization) over retries
 -- for the same run. The SEED+1 is just a very bad fix for the
 -- moment...
@@ -230,15 +231,13 @@ function SetCurrentIteration()
 
    -- create subdirectories for this iteration
    paths.mkdir(iterationPath)
-   if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      paths.mkdir(iterationPath .. 'mask')
-   else
+   paths.mkdir(iterationPath .. 'mask')
+   if not config.IsVisibilityCheck(iterationBlock, iterationType) then
       paths.mkdir(iterationPath .. 'scene')
       paths.mkdir(iterationPath .. 'depth')
-      paths.mkdir(iterationPath .. 'mask')
    end
 
-   -- prepare the block
+   -- prepare the block for either train or test
    block = require(iterationBlock)
    if iterationType == -1 then -- train
       block.SetBlockTrain(currentIteration)
@@ -246,11 +245,12 @@ function SetCurrentIteration()
       block.SetBlockTest(currentIteration)
    end
 
+   -- RunBlock will be called from blueprint
    RunBlock = function() return block.RunBlock() end
 
    utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
 
-   -- tweak to force the first iteration to be at the required
+   -- BUGFIX tweak to force the first iteration to be at the required
    -- resolution
    utils.AddTickHook(SetResolution)
 
@@ -261,14 +261,13 @@ function SetCurrentIteration()
       -- save screen, depth and mask
       utils.AddTickHook(SaveScreen)
       utils.AddTickHook(SaveMask)
-
    end
    utils.AddTickHook(SaveStatusToTable)
    utils.AddEndTickHook(SaveData)
 
    if iterationType == -1 then  -- train
-      local tweak = function(dt) return utils.UpdateIterationsCounter(true) end
-      utils.AddEndTickHook(tweak)
+      utils.AddEndTickHook(
+         function(dt) return utils.UpdateIterationsCounter(true) end)
    else  -- test
       utils.AddTickHook(block.SaveCheckInfo)
       utils.AddEndTickHook(block.Check)

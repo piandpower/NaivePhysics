@@ -42,6 +42,7 @@ luarocks install luaposix
 
 echo "Step 2: setup Unreal Engine and UETorch"
 
+# clone only branch 4.8 to save space and bandwidth
 git clone --branch 4.8 --depth 1 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
 cd $UNREALENGINE_ROOT
 git clone git@github.com:marioyc/UETorch.git Engine/Plugins/UETorch

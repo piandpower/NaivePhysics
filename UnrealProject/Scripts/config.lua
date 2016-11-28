@@ -9,10 +9,14 @@ function RandomBool()
 end
 
 
--- Pad a number with beginning zeros, return it as a string
+-- Pad a number `int` with `n` beginning zeros, return it as a string
+--
+-- PadZeros(0, 3)  -> '000'
+-- PadZeros(12, 3) -> '012'
+-- PadZeros(12, 1) -> '12'
 function PadZeros(int, n)
    s = tostring(int)
-   for _ = 1, n-#s do
+   for _ = 1, n - #s do
       s = '0' .. s
    end
    return s
