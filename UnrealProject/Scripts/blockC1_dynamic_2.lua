@@ -176,6 +176,18 @@ function block.MainActor()
    return mainActor
 end
 
+function block.ActiveActors()
+   local a = {table.unpack(spheres)}
+   table.insert(a, wall1)
+   table.insert(a, wall2)
+   table.insert(a, floor)
+   return a
+end
+
+function block.MaxActors()
+   return #spheres + 3 -- spheres + 2 walls + floor
+end
+
 
 function block.SetBlockTrain(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
@@ -196,7 +208,7 @@ function block.SetBlockTrain(currentIteration)
    possible = true
 
    mainActor = spheres[params.index]
-   for i = 1,params.n do
+   for i = 1, params.n do
       block.actors['sphere' .. i] = spheres[i]
    end
 end
@@ -267,19 +279,24 @@ function block.RunBlock()
 
    -- walls
    material.SetActorMaterial(wall1, material.wall_materials[params.wall])
-   material.SetActorMaterial(wall2, material.wall_materials[params.wall])
-   utils.AddTickHook(StartDown)
    uetorch.SetActorScale3D(wall1, params.scaleW, 1, params.scaleH)
-   uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
    wall1_boxY = uetorch.GetActorBounds(wall1).boxY
-   wall2_boxY = uetorch.GetActorBounds(wall2).boxY
    uetorch.SetActorLocation(wall1, -200 * params.scaleW, -350, 20 + wall1_boxY)
-   uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall2_boxY)
    uetorch.SetActorRotation(wall1, 0, 0, 90)
+
+   material.SetActorMaterial(wall2, material.wall_materials[params.wall])
+   uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
+   wall2_boxY = uetorch.GetActorBounds(wall2).boxY
+   uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall2_boxY)
    uetorch.SetActorRotation(wall2, 0, 0, 90)
+
+   utils.AddTickHook(StartDown)
 
    -- spheres
    uetorch.SetActorVisible(sphere, visible1)
+   if not visible1 and iterationType == -1 then
+      uetorch.DestroyActor(sphere)
+   end
 
    for i = 1,params.n do
       material.SetActorMaterial(spheres[i], material.sphere_materials[params.sphere])

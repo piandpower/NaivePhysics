@@ -10,9 +10,8 @@ local block
 -- Python). From https://stackoverflow.com/questions/20066835
 function Unique(t)
    local hash, res = {}, {}
-   t:apply(function(x)
-         if not hash[x] then res[#res+1] = x; hash[x] = true end
-   end)
+   t:apply(
+      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
    return res
 end
 
@@ -25,6 +24,9 @@ end
 
 uetorch.SetTickDeltaBounds(1/8, 1/8)
 
+-- TODO need to preserve the seed (no reinitialization) over retries
+-- for the same run. The SEED+1 is just a very bad fix for the
+-- moment...
 local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
 -- print('setup random seed to ' .. seed)
 math.randomseed(seed)
@@ -256,7 +258,10 @@ function SetCurrentIteration()
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
       utils.AddTickHook(CheckVisibility)
    else
+      -- save screen, depth and mask
       utils.AddTickHook(SaveScreen)
+      utils.AddTickHook(SaveMask)
+
    end
    utils.AddTickHook(SaveStatusToTable)
    utils.AddEndTickHook(SaveData)
@@ -264,9 +269,6 @@ function SetCurrentIteration()
    if iterationType == -1 then  -- train
       local tweak = function(dt) return utils.UpdateIterationsCounter(true) end
       utils.AddEndTickHook(tweak)
-
-      -- save the mask
-      utils.AddTickHook(SaveMask)
    else  -- test
       utils.AddTickHook(block.SaveCheckInfo)
       utils.AddEndTickHook(block.Check)

@@ -144,6 +144,17 @@ function block.MainActor()
    return mainActor
 end
 
+function block.ActiveActors()
+   local a = {table.unpack(spheres)}
+   table.insert(a, wall)
+   table.insert(a, floor)
+   return a
+end
+
+function block.MaxActors()
+   return #spheres + 2 -- spheres + wall + floor
+end
+
 
 function block.SetBlockTrain(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
@@ -242,6 +253,11 @@ function block.RunBlock()
    -- spheres
    uetorch.SetActorLocation(sphere, 150, -550, 70)
    uetorch.SetActorVisible(spheres[params.index], visible1)
+   if not visible1 and iterationType == -1 then
+      uetorch.DestroyActor(spheres[params.index])
+   end
+
+
    for i = 1,params.n do
       material.SetActorMaterial(spheres[i], material.sphere_materials[params.sphere])
    end
