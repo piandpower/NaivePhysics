@@ -17,6 +17,7 @@
 
 #
 # This is the installation script of the NaivePhysics data generator
+# (optimized for Debian jessie)
 #
 
 export NAIVEPHYSICS_ROOT=$(readlink -f .)
@@ -28,7 +29,7 @@ export UNREALENGINE_ROOT=$NAIVEPHYSICS_ROOT/UnrealEngine
 TORCH_ROOT=$NAIVEPHYSICS_ROOT/torch
 
 
-echo "Step 1: setup Torch and Lua"
+# echo "Step 1: setup Torch and Lua"
 
 git clone --branch master --depth 1 git@github.com:torch/distro.git $TORCH_ROOT
 cd $TORCH_ROOT
@@ -41,6 +42,40 @@ luarocks install luaposix
 
 
 echo "Step 2: setup Unreal Engine and UETorch"
+
+# Because /UnrealEngine/Engine/Build/BatchFiles/Linux/Setup.sh lack of
+# Debian support, we install required dependencies here if on Debian
+if [ -e /etc/os-release ]; then
+    source /etc/os-release
+    if [[ "$ID" == "debian" ]]; then
+        DEPS="mono-xbuild \
+       mono-dmcs \
+       libmono-microsoft-build-tasks-v4.0-4.0-cil \
+       libmono-system-data-datasetextensions4.0-cil
+       libmono-system-web-extensions4.0-cil
+       libmono-system-management4.0-cil
+       libmono-system-xml-linq4.0-cil
+       libmono-corlib4.5-cil
+       libmono-windowsbase4.0-cil
+       libmono-system-io-compression4.0-cil
+       libmono-system-io-compression-filesystem4.0-cil
+       libmono-system-runtime4.0-cil
+       mono-devel
+       clang
+       "
+
+        for DEP in $DEPS; do
+            if ! dpkg -s $DEP > /dev/null 2>&1; then
+                echo "Attempting installation of missing package: $DEP"
+                set -x
+                sudo apt-get install -y $DEP
+                set +x
+            fi
+        done
+
+    fi
+fi
+
 
 # clone only branch 4.13 to save space and bandwidth
 git clone --branch 4.13 --depth 1 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
@@ -76,6 +111,14 @@ EOF
 source $NAIVEPHYSICS_ROOT/activate-naivephysics
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
 
-echo "Successful installation of the Unreal Engine with UETorch,
-please package the NaivePhysics project (refer to the 'Instalaltion
-details' section of the README)"
+
+echo "Step 4: packaging the NaivePhysics Unreal project"
+./build_package.sh
+
+
+echo "
+Successful installation of the Unreal Engine with UETorch.
+
+Please source ~/.bashrc to activate your NaivePhysics environment.
+
+"

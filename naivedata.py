@@ -412,7 +412,8 @@ def Main():
             shutil.rmtree(output_dir)
         else:
             raise IOError(
-                'Existing output directory {}'.format(output_dir))
+                'Existing output directory (use --force option '
+                'to overwrite it) {}'.format(output_dir))
     os.makedirs(output_dir)
 
     # run the simulation either in the editor or as a standalone

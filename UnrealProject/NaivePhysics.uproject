@@ -1,16 +1,23 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "",
-	"Category": "",
-	"Description": "",
-	"Plugins": [
-		{
-			"Name": "ScriptPlugin",
-			"Enabled": true
-		},
-		{
-			"Name": "UETorch",
-			"Enabled": true
-		}
-	]
+    "FileVersion": 3,
+    "EngineAssociation": "",
+    "Category": "",
+    "Description": "",
+    "Modules": [
+        {
+            "Name": "NaivePhysics",
+            "Type": "Runtime",
+            "LoadingPhase": "Default"
+        }
+    ],
+    "Plugins": [
+	{
+	    "Name": "ScriptPlugin",
+	    "Enabled": true
+	},
+	{
+	    "Name": "UETorch",
+	    "Enabled": true
+	}
+    ]
 }
