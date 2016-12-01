@@ -21,7 +21,7 @@
 
 export NAIVEPHYSICS_ROOT=$(readlink -f .)
 [ ! -f $NAIVEPHYSICS_ROOT/build_package.sh ] \
-    && echo "Error: build_package.sh not found, are you in the NaivePhysics directory?" \
+    && echo "Error: ./build_package.sh not found, are you in the NaivePhysics directory?" \
     && exit 1
 
 export UNREALENGINE_ROOT=$NAIVEPHYSICS_ROOT/UnrealEngine

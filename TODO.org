@@ -3,10 +3,11 @@ TODO list for the NaivePhysics project
 * train, after ED
 ** mask, depth and scene
 ** check at least one object visible and one occlusion
-   a posteriori: just parse the status.txt
-** random trajectories (not only parallel, we want hits!)
+   a posteriori: just parse the status.txt?
 ** random spheres and walls
    walls with left/right rotations, mobile/immobile spheres
+   non parallel trajectories for spheres
+   world limit with walls or sky randomly
 * bugs
 ** do we need depth for train samples? YES
    If so there is a bug because all actors are visible on depth but not in scene
