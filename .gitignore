@@ -67,4 +67,5 @@ activate-naivephysics
 data*/*
 *.json
 !exemple.json
+!/exemples/config.json
 /core
