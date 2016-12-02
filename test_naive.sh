@@ -27,15 +27,15 @@ EOF
 
 # get the list of gif files and put them in a markdown
 rm -f $test_dir/test.md
-for type in "scene" "mask"
+for type in "scene" "depth" "mask"
 do
     for gif in $(find $test_dir/data -type f -name *.gif -exec readlink -f {} \; \
-                        | grep $type | sort)
+                        | grep $type | sort | head -4)
     do
         echo -e "<img src=\"$gif\" width=\"256\">" >> $test_dir/test.md
     done
     echo -e "\n" >> $test_dir/test.md
 done
 
-# make an html page*
+# make an html page from markdown
 markdown $test_dir/test.md > $test_dir/test.html

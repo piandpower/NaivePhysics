@@ -63,7 +63,8 @@ local function SaveScreen(dt)
 
       local file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
-      local i2 = uetorch.DepthField(camera)
+      local _, inactive_actors = block.MaskingActors()
+      local i2 = uetorch.DepthField(camera, inactive_actors)
 
       if i2 then
          -- normalize the depth field in [0, 1]. TODO max depth is the
@@ -100,15 +101,16 @@ local function SaveStatusToTable(dt)
    tSaveText = tSaveText + dt
 end
 
+
 local tMask, tLastMask, stepMask = 0, 0, 0
 local function SaveMask(dt)
    if tMask - tLastMask >= config.GetBlockCaptureInterval(iterationBlock) then
       stepMask = stepMask + 1
 
       local file = iterationPath .. 'mask/mask_' .. PadZeros(stepMask, 3) .. '.jpeg'
-      local actors = block.ActiveActors()
-      local i2 = uetorch.ObjectSegmentation(actors)
 
+      local active_actors, inactive_actors = block.MaskingActors()
+      local i2 = uetorch.ObjectSegmentation(active_actors, inactive_actors)
       if i2 then
          i2 = i2:float()  -- cast from int to float for normalization
          i2:apply(function(x) return x / block.MaxActors() end)

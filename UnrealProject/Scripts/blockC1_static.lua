@@ -144,15 +144,40 @@ function block.MainActor()
    return mainActor
 end
 
-function block.ActiveActors()
-   local a = {table.unpack(spheres)}
-   table.insert(a, wall)
-   table.insert(a, floor)
-   return a
+function block.MaskingActors()
+   local active, inactive = {}, {}
+   table.insert(active, wall)
+   table.insert(active, floor)
+
+   if iterationType == -1 then
+      -- on train, we don't have any inactive actor
+      for _, s in pairs(spheres) do
+         table.insert(active, s)
+      end
+   else
+      -- on test, the main actor only can be inactive (when hidden)
+      for _, v in pairs(block.actors) do
+         if not v == mainActor then
+            table.insert(active, v)
+         end
+      end
+      table.insert(active, mainActor)
+      -- -- We add the main actor as active only when it's not hidden
+      -- if (possible and visible1) -- visible all time
+      --    or (not possible and visible1 and not trick) -- visible 1st half
+      --    or (not possible and visible2 and trick) -- visible 2nd half
+      -- then
+      --    table.insert(active, mainActor)
+      -- else
+      --    table.insert(inactive, mainActor)
+      -- end
+   end
+
+   return active, inactive
 end
 
 function block.MaxActors()
-   return #spheres + 2 -- spheres + wall + floor
+   return params.n + 2 -- spheres + wall + floor
 end
 
 
