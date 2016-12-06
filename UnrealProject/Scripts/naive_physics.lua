@@ -54,18 +54,21 @@ local function SaveScreen(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
+      -- save the screen
       local file = iterationPath .. 'scene/scene_' .. stepStr .. '.jpeg'
       local i1 = uetorch.Screen()
-
       if i1 then
          image.save(file, i1)
       end
 
+      -- active and inactive actors in the scene are required for
+      -- depth and mask
+      local active_actors, inactive_actors = block.MaskingActors()
+
+      -- save the depth field
       local file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
-      local _, inactive_actors = block.MaskingActors()
       local i2 = uetorch.DepthField(camera, inactive_actors)
-
       if i2 then
          -- normalize the depth field in [0, 1]. TODO max depth is the
          -- horizon line, which is assumed to be visible at the first
@@ -75,6 +78,16 @@ local function SaveScreen(dt)
          i2:apply(function(x) return x / max_depth end)
          image.save(file, i2)
       end
+
+      -- save the object masks
+      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
+      local i3 = uetorch.ObjectSegmentation(active_actors, inactive_actors)
+      if i3 then
+         i3 = i3:float()  -- cast from int to float for normalization
+         i3:apply(function(x) return x / block.MaxActors() end)
+         image.save(file, i3)
+      end
+
 
       tLastSaveScreen = tSaveScreen
    end
@@ -99,27 +112,6 @@ local function SaveStatusToTable(dt)
       tLastSaveText = tSaveText
    end
    tSaveText = tSaveText + dt
-end
-
-
-local tMask, tLastMask, stepMask = 0, 0, 0
-local function SaveMask(dt)
-   if tMask - tLastMask >= config.GetBlockCaptureInterval(iterationBlock) then
-      stepMask = stepMask + 1
-
-      local file = iterationPath .. 'mask/mask_' .. PadZeros(stepMask, 3) .. '.jpeg'
-
-      local active_actors, inactive_actors = block.MaskingActors()
-      local i2 = uetorch.ObjectSegmentation(active_actors, inactive_actors)
-      if i2 then
-         i2 = i2:float()  -- cast from int to float for normalization
-         i2:apply(function(x) return x / block.MaxActors() end)
-         image.save(file, i2)
-      end
-
-      tLastMask = tMask
-   end
-   tMask = tMask + dt
 end
 
 
@@ -262,7 +254,6 @@ function SetCurrentIteration()
    else
       -- save screen, depth and mask
       utils.AddTickHook(SaveScreen)
-      utils.AddTickHook(SaveMask)
    end
    utils.AddTickHook(SaveStatusToTable)
    utils.AddEndTickHook(SaveData)
