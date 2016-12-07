@@ -28,14 +28,11 @@ local canDoTrick2 = false
 local t_rotation = 0
 local t_rotation_change = 0
 local cont = 1
-
 local RemainDown
 
 local function WallRotationDown(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
-
    uetorch.SetActorRotation(wall, 0, 0, angle)
-
    uetorch.SetActorLocation(
       wall, 100 - 200 * params.scaleW, -350,
       20 + math.sin(angle * math.pi / 180) * wall_boxY)
@@ -50,6 +47,7 @@ local function WallRotationDown(dt)
          cont = 2
       end
    end
+
    t_rotation = t_rotation + dt
 end
 
@@ -67,7 +65,6 @@ end
 local function WallRotationUp(dt)
    local angle = (t_rotation - t_rotation_change) * 20 * 0.125
    uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
-
    uetorch.SetActorLocation(
       wall, 100 - 200 * params.scaleW, -350,
       20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
@@ -77,12 +74,13 @@ local function WallRotationUp(dt)
       utils.AddTickHook(RemainUp)
       t_rotation_change = t_rotation
    end
+
    t_rotation = t_rotation + dt
 end
 
 local framesDown = 0
 
-RemainDown = function(dt)
+local function RemainDown(dt)
    framesDown = framesDown + 1
    if framesDown == params.framesStartDown then
       framesDown = 0
@@ -107,7 +105,6 @@ local function Trick(dt)
          trick2 = true
          uetorch.SetActorVisible(spheres[params.index], visible1)
       end
-
       tLastCheck = tCheck
    end
    tCheck = tCheck + dt
@@ -162,15 +159,15 @@ function block.MaskingActors()
          end
       end
       table.insert(active, mainActor)
-      -- -- We add the main actor as active only when it's not hidden
-      -- if (possible and visible1) -- visible all time
-      --    or (not possible and visible1 and not trick) -- visible 1st half
-      --    or (not possible and visible2 and trick) -- visible 2nd half
-      -- then
-      --    table.insert(active, mainActor)
-      -- else
-      --    table.insert(inactive, mainActor)
-      -- end
+      -- We add the main actor as active only when it's not hidden
+      if (possible and visible1) -- visible all time
+         or (not possible and visible1 and not trick1) -- visible 1st half
+         or (not possible and visible2 and trick1) -- visible 2nd half
+      then
+         table.insert(active, mainActor)
+      else
+         table.insert(inactive, mainActor)
+      end
    end
 
    return active, inactive

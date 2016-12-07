@@ -120,6 +120,53 @@ local function Trick(dt)
 end
 
 
+local mainActor
+function block.MainActor()
+   return mainActor
+end
+
+
+function block.MaskingActors()
+   local active, inactive = {}, {}
+   local a = {table.unpack(spheres)}
+   table.insert(active, wall1)
+   table.insert(active, wall2)
+   table.insert(active, floor)
+
+   if iterationType == -1 then
+      -- on train, we don't have any inactive actor
+      for _, s in pairs(spheres) do
+         table.insert(active, s)
+      end
+   else
+      -- on test, the main actor only can be inactive (when hidden)
+      for i = 1, params.n do
+         if i ~= params.index then
+            table.insert(active, spheres[i])
+         end
+      end
+
+      -- We add the main actor as active only when it's not hidden
+      if (possible and visible1) -- visible all time
+         or (not possible and visible1 and not trick1 and not trick2) -- visible 1st third
+         or (not possible and visible2 and trick1 and not trick2) -- visible 2nd third
+         or (not possible and visible1 and trick1 and trick2) -- visible 3rd third
+      then
+         table.insert(active, mainActor)
+      else
+         table.insert(inactive, mainActor)
+      end
+   end
+
+   return active, inactive
+end
+
+
+function block.MaxActors()
+   return params.n + 3 -- spheres + 2 walls + floor
+end
+
+
 -- Return random parameters for the C1 dynamic_2 block
 local function GetRandomParams()
    local params = {
@@ -167,25 +214,6 @@ local function GetRandomParams()
    end
 
    return params
-end
-
-
-local mainActor
-
-function block.MainActor()
-   return mainActor
-end
-
-function block.ActiveActors()
-   local a = {table.unpack(spheres)}
-   table.insert(a, wall1)
-   table.insert(a, wall2)
-   table.insert(a, floor)
-   return a
-end
-
-function block.MaxActors()
-   return #spheres + 3 -- spheres + 2 walls + floor
 end
 
 

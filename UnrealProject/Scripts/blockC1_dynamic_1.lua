@@ -90,11 +90,12 @@ local function Trick(dt)
    tCheck = tCheck + dt
 end
 
-local mainActor
 
+local mainActor
 function block.MainActor()
    return mainActor
 end
+
 
 -- Return 2 tables of currently active and inactive actors for masking
 -- computation. Inactive actor is the main sphere when twicked (not
@@ -131,9 +132,11 @@ function block.MaskingActors()
    return active, inactive
 end
 
+
 function block.MaxActors()
    return params.n + 2 -- spheres + wall + floor
 end
+
 
 -- Return random parameters for the C1 dynamic_1 block
 local function GetRandomParams()
