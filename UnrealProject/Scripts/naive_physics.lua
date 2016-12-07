@@ -40,15 +40,16 @@ RunBlock = nil
 -- replace uetorch's Tick function
 Tick = utils.Tick
 
-
 local iterationId, iterationType, iterationBlock, iterationPath
+
 
 local screenTable, depthTable = {}, {}
 local tLastSaveScreen = 0
 local tSaveScreen = 0
 local step = 0
-
 local max_depth = 0
+
+-- Save screenshot, object masks and depth field into jpeg images
 local function SaveScreen(dt)
    if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
@@ -65,34 +66,35 @@ local function SaveScreen(dt)
       -- depth and mask
       local active_actors, inactive_actors = block.MaskingActors()
 
-      -- save the depth field
-      local file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
+      -- compute the depth field and objects segmentatio masks
+      local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
+      local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
       local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
-      local i2 = uetorch.DepthField(camera, inactive_actors)
+      local i2, i3 = uetorch.CaptureDepthAndMasks(camera, active_actors, inactive_actors)
+
+      -- save the depth field
       if i2 then
          -- normalize the depth field in [0, 1]. TODO max depth is the
          -- horizon line, which is assumed to be visible at the first
          -- tick. If this is not the case, the following normalization
-         -- isn't correct as the global_max varies accross ticks.
+         -- isn't correct as the max_depth varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
          i2:apply(function(x) return x / max_depth end)
-         image.save(file, i2)
+         image.save(depth_file, i2)
       end
 
-      -- save the object masks
-      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
-      local i3 = uetorch.ObjectSegmentation(active_actors, inactive_actors)
+      -- save the objects segmentation masks
       if i3 then
          i3 = i3:float()  -- cast from int to float for normalization
          i3:apply(function(x) return x / block.MaxActors() end)
-         image.save(file, i3)
+         image.save(mask_file, i3)
       end
-
 
       tLastSaveScreen = tSaveScreen
    end
    tSaveScreen = tSaveScreen + dt
 end
+
 
 local data = {}
 local tSaveText = 0
