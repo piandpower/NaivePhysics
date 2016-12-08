@@ -45,8 +45,10 @@ sample=$(cat gifs | grep scene | grep test | sed -r 's|^(.*)/[0-9]+/scene/video.
 find $sample -type f -name video.gif | grep scene | sort >> test
 
 
-# select random videos with depth and mask (two train)
+# select random videos with depth and mask (two train, two tests)
 samples=$(cat gifs | grep scene | grep train | sort -R | head -2)
+samples="$samples $(cat gifs | grep scene | grep test | grep /3/ | sort -R | head -1)"
+samples="$samples $(cat gifs | grep scene | grep test | grep /2/ | sort -R | head -1)"
 for sample in $samples
 do
     echo $sample >> meta

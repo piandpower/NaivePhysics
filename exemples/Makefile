@@ -1,4 +1,4 @@
-NAIVEPHYSICS=/home/mbernard/dev/NaivePhysics
+NAIVEPHYSICS=/home/mbernard/dev/NaivePhysics-4.8
 
 # building an html page from gif files
 html: data
