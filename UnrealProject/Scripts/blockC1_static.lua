@@ -153,11 +153,12 @@ function block.MaskingActors()
       end
    else
       -- on test, the main actor only can be inactive (when hidden)
-      for _, v in pairs(block.actors) do
-         if not v == mainActor then
-            table.insert(active, v)
+      for i = 1, params.n do
+         if i ~= params.index then
+            table.insert(active, spheres[i])
          end
       end
+
       table.insert(active, mainActor)
       -- We add the main actor as active only when it's not hidden
       if (possible and visible1) -- visible all time
