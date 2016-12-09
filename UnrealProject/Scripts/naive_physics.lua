@@ -69,8 +69,10 @@ local function SaveScreen(dt)
       -- compute the depth field and objects segmentatio masks
       local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
       local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
-      local camera = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
-      local i2, i3 = uetorch.CaptureDepthAndMasks(camera, active_actors, inactive_actors)
+      local camera = assert(
+         uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0"))
+      local i2, i3 = uetorch.CaptureDepthAndMasks(
+         camera, active_actors, inactive_actors)
 
       -- save the depth field
       if i2 then
@@ -128,12 +130,12 @@ local function CheckVisibility(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
-      local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
+      -- local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
       if i2 then
-         image.save(file, i2)
+         -- image.save(file, i2)
 
          if torch.max(i2) == 0 then
             hidden = true
