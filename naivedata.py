@@ -210,8 +210,12 @@ def ParseArgs():
         this option is ignored if --editor is specified''')
 
     parser.add_argument(
-        '--editor', action='store_true',
+        '-e', '--editor', action='store_true',
         help='launch the NaivePhysics project in the UnrealEngine editor')
+
+    parser.add_argument(
+        '-d', '--dry', action='store_true',
+        help='do not save any image, this runs really faster')
 
     return parser.parse_args()
 
@@ -269,7 +273,7 @@ def _BalanceConfig(config, njobs):
     return subconfigs, njobs
 
 
-def _Run(command, log, config_file, output_dir, seed=None):
+def _Run(command, log, config_file, output_dir, seed=None, dry=False):
     """Run `command` as a subprocess
 
     The `command` stdout and stderr are forwarded to `log`. The
@@ -282,6 +286,8 @@ def _Run(command, log, config_file, output_dir, seed=None):
        trailing slash added.
 
     NAIVEPHYSICS_SEED is `seed`.
+
+    NAIVEPHYSICS_DRY is `dry`
 
     """
     # get the output directory as absolute path with a trailing /,
@@ -296,6 +302,8 @@ def _Run(command, log, config_file, output_dir, seed=None):
     environ = copy.deepcopy(os.environ)
     environ['NAIVEPHYSICS_DATA'] = output_dir
     environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
+    if dry:
+        environ['NAIVEPHYSICS_DRY'] = 'true'
     if seed is not None:
         environ['NAIVEPHYSICS_SEED'] = str(seed)
 
@@ -326,7 +334,8 @@ def _Run(command, log, config_file, output_dir, seed=None):
         sys.exit(job.returncode)
 
 
-def RunBinary(output_dir, config_file, njobs=1, seed=None, verbose=False):
+def RunBinary(output_dir, config_file, njobs=1,
+              seed=None, dry=False, verbose=False):
     """Run the NaivePhysics packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
@@ -350,7 +359,7 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None, verbose=False):
     if njobs == 1:
         _Run(NAIVEPHYSICS_BINARY,
              GetLogger(verbose=verbose),
-             config_file, output_dir, seed=seed)
+             config_file, output_dir, seed=seed, dry=dry)
     else:
         # split the json configuration file into balanced subparts
         subconfigs, njobs = _BalanceConfig(
@@ -378,11 +387,12 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None, verbose=False):
         # run the subprocesses
         joblib.Parallel(n_jobs=njobs, backend='threading')(
             joblib.delayed(_Run)(
-                NAIVEPHYSICS_BINARY, _log[i], _conf[i], _out[i], seed=_seed[i])
+                NAIVEPHYSICS_BINARY, _log[i], _conf[i], _out[i],
+                seed=_seed[i], dry=dry)
             for i in range(njobs))
 
 
-def RunEditor(output_dir, config_file, seed=None, verbose=False):
+def RunEditor(output_dir, config_file, seed=None, dry=False, verbose=False):
     """Run the NaivePhysics project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
@@ -398,7 +408,8 @@ def RunEditor(output_dir, config_file, seed=None, verbose=False):
 
     log.debug('running NaivePhysics in the Unreal Engine editor')
 
-    _Run(editor + ' ' + project, log, config_file, output_dir, seed=seed)
+    _Run(editor + ' ' + project, log, config_file, output_dir,
+         seed=seed, dry=dry)
 
 
 def Main():
@@ -419,10 +430,10 @@ def Main():
     # program
     if args.editor:
         RunEditor(output_dir, args.config_file,
-                  seed=args.seed, verbose=args.verbose)
+                  seed=args.seed, dry=args.dry, verbose=args.verbose)
     else:
-        RunBinary(output_dir, args.config_file,
-                  njobs=args.njobs, seed=args.seed, verbose=args.verbose)
+        RunBinary(output_dir, args.config_file, njobs=args.njobs,
+                  seed=args.seed, dry=args.dry, verbose=args.verbose)
 
 
 if __name__ == '__main__':

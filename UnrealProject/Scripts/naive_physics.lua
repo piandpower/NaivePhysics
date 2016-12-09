@@ -33,6 +33,11 @@ local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
 math.randomseed(seed)
 posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
+local dry_run = os.getenv('NAIVEPHYSICS_DRY') or false
+if dry_run then
+   print('dry run: do not capture any image')
+end
+
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
 RunBlock = nil
@@ -49,14 +54,14 @@ local tSaveScreen = 0
 local step = 0
 local max_depth = 0
 
--- Save screenshot, object masks and depth field into jpeg images
+-- Save screenshot, object masks and depth field into png images
 local function SaveScreen(dt)
    if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
       -- save the screen
-      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.jpeg'
+      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.png'
       local i1 = uetorch.Screen()
       if i1 then
          image.save(file, i1)
@@ -67,8 +72,8 @@ local function SaveScreen(dt)
       local active_actors, inactive_actors = block.MaskingActors()
 
       -- compute the depth field and objects segmentatio masks
-      local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.jpeg'
-      local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
+      local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
+      local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local camera = assert(
          uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0"))
       local i2, i3 = uetorch.CaptureDepthAndMasks(
@@ -130,7 +135,7 @@ local function CheckVisibility(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
-      -- local file = iterationPath .. 'mask/mask_' .. stepStr .. '.jpeg'
+      -- local file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
@@ -257,7 +262,9 @@ function SetCurrentIteration()
       utils.AddTickHook(CheckVisibility)
    else
       -- save screen, depth and mask
-      utils.AddTickHook(SaveScreen)
+      if not dry_run then
+         utils.AddTickHook(SaveScreen)
+      end
    end
    utils.AddTickHook(SaveStatusToTable)
    utils.AddEndTickHook(SaveData)
