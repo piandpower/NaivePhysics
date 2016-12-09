@@ -23,18 +23,18 @@ material.ground_materials = {
 
 
 material.sphere_materials = {
-   -- "BlackMaterial",
-   -- "GreenMaterial",
+   "BlackMaterial",
+   "GreenMaterial",
    -- "M_ColorGrid_LowSpec",
    -- "M_Metal_Brushed_Nickel",
    -- "M_Metal_Burnished_Steel",
    -- "M_Metal_Chrome",
-   -- "M_Metal_Copper",
-   -- "M_Metal_Gold",
-   -- "M_Metal_Rust",
-   -- "M_Metal_Steel",
+   "M_Metal_Copper",
+   "M_Metal_Gold",
+   "M_Metal_Rust",
+   "M_Metal_Steel",
    "M_Tech_Hex_Tile",
-   -- "M_Tech_Panel",
+   "M_Tech_Panel",
 }
 
 

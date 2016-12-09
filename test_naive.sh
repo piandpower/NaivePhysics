@@ -11,10 +11,10 @@ mkdir -p $test_dir
 # setup config file
 cat > $test_dir/config.json <<EOF
 {
-    "blockC1_static" :
+    "blockC1_dynamic_1" :
     {
-        "train": 0,
-        "test": 1
+        "train": 1,
+        "test": 0
     }
 }
 EOF
