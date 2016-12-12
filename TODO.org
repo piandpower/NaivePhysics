@@ -1,5 +1,7 @@
 TODO list for the NaivePhysics project
 
+* different classes of motion
+  static, sliding, rolling, falling, walking (agent)
 * train, after ED
 ** check at least one object visible and one occlusion
    a posteriori: just parse the status.txt?
