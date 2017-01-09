@@ -221,7 +221,10 @@ def ParseArgs():
 
 
 def _BalanceConfig(config, njobs):
-    """Split the `config` into `n` parts returned as list of dicts"""
+    """Split the `config` into `n` parts returned as list of dicts
+
+    TODO this is buggy for now
+    """
     # count the number of runs and iterations defined in the json
     total_iterations = 0
     total_runs = 0
@@ -351,6 +354,7 @@ def RunBinary(output_dir, config_file, njobs=1,
 
     if not os.path.isfile(config_file):
         raise IOError('Json file not found: {}'.format(config_file))
+    # TODO check the json file is correctly formatted
 
     print('running {}{}'.format(
         os.path.basename(NAIVEPHYSICS_BINARY),
