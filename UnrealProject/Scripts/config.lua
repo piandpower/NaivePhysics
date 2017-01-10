@@ -44,14 +44,14 @@ conf = {
    dataPath = assert(os.getenv('NAIVEPHYSICS_DATA')),
    loadParams = false,
    captureInterval = {
-      blockC1_static = 3,
+      blockC1_static = 2,
       blockC1_dynamic_1 = 2,
       blockC1_dynamic_2 = 2
    },
    sceneTicks = {
-      blockC1_static = 200,
-      blockC1_dynamic_1 = 120,
-      blockC1_dynamic_2 = 120
+      blockC1_static = 201,
+      blockC1_dynamic_1 = 201,
+      blockC1_dynamic_2 = 201
    },
    visibilityCheckSize = {
       blockC1_static = 1,
