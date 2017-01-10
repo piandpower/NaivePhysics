@@ -17,8 +17,6 @@ TODO list for the NaivePhysics project
 *** release of a NaivePhysics-1.0 version as well
 
 * Bugs
-** add a little delay (3 to 4 ticks?) because textures take time to be correctly displayed
-   also the first image is all black!
 ** a minor bug in C1_dynamic_1?
 *** Sometimes the main actor move slower in 2nd than in 1st iteration?
     Lead to a check failure in all cases but this is a waste of time
