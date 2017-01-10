@@ -280,7 +280,6 @@ function block.RunBlock()
       uetorch.DestroyActor(spheres[params.index])
    end
 
-
    for i = 1,params.n do
       material.SetActorMaterial(spheres[i], material.sphere_materials[params.sphere])
    end

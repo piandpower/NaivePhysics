@@ -8,11 +8,13 @@ local camera = {}
 
 
 function camera.randomLocation()
-   return {
+   local cameraLocation = {
       math.random(-50, 50), -- x axis is left/right
-      math.random(-100, 0), -- y axis is front/back
+      math.random(-50, 150), -- y axis is front/back
       math.random(-10, 50)  -- z axis is up/down
    }
+   -- print('camera y location is ' .. cameraLocation[2])
+   return cameraLocation
 end
 
 
