@@ -18,7 +18,8 @@ end
 
 -- Force the rendered image to be 512x288 (16:9 ratio)
 function SetResolution(dt)
-   uetorch.SetResolution(512, 288)
+   uetorch.SetResolution(288, 288)
+   -- uetorch.SetResolution(512, 512)
 end
 
 
