@@ -116,7 +116,9 @@ local function GetRandomParams()
    local params = {
       ground = math.random(#material.ground_materials),
       wall = math.random(#material.wall_materials),
-      sphere = math.random(#material.sphere_materials),
+      sphere1 = math.random(#material.sphere_materials),
+      sphere2 = math.random(#material.sphere_materials),
+      sphere3 = math.random(#material.sphere_materials),
       framesStartDown = math.random(20),
       framesRemainUp = math.random(20),
       scaleW = 1 - 0.4 * math.random(),
@@ -280,9 +282,10 @@ function block.RunBlock()
       uetorch.DestroyActor(spheres[params.index])
    end
 
-   for i = 1,params.n do
-      material.SetActorMaterial(spheres[i], material.sphere_materials[params.sphere])
-   end
+   material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
+   material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
+   material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
+
    if params.n >= 2 then
       uetorch.SetActorLocation(sphere2, 40,-550, 70)
    end
