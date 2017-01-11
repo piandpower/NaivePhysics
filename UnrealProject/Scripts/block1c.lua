@@ -4,9 +4,9 @@ local utils = require 'utils'
 local material = require 'material'
 local block = {}
 
-local sphere = uetorch.GetActor("Sphere_4")
-local wall1 = uetorch.GetActor("Wall_400x200_8")
-local wall2 = uetorch.GetActor("Wall_400x201_7")
+local sphere = uetorch.GetActor("Sphere_1")
+local wall1 = uetorch.GetActor("Occluder_1")
+local wall2 = uetorch.GetActor("Occluder_2")
 local wall_boxY
 block.actors = {sphere=sphere, wall1=wall1, wall2=wall2}
 

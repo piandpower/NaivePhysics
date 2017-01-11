@@ -2,15 +2,16 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
+local backwall = require 'backwall'
 local camera = require 'camera'
 local block = {}
 
 local floor = uetorch.GetActor('Floor')
-local sphere = uetorch.GetActor("Sphere_4")
-local sphere2 = uetorch.GetActor("Sphere9_4")
-local sphere3 = uetorch.GetActor("Sphere10_7")
+local sphere = uetorch.GetActor("Sphere_1")
+local sphere2 = uetorch.GetActor("Sphere_2")
+local sphere3 = uetorch.GetActor("Sphere_3")
 local spheres = {sphere, sphere2, sphere3}
-local wall = uetorch.GetActor("Wall_400x200_8")
+local wall = uetorch.GetActor("Occluder_1")
 local wall_boxY
 block.actors = {wall=wall}
 
@@ -127,6 +128,12 @@ local function GetRandomParams()
    }
    params.index = math.random(1, params.n)
 
+   -- Background wall with 50% chance
+   params.isBackwall = (1 == math.random(0, 1)) -- TODO this should be a separate function (in utils)
+   if params.isBackwall then
+      params.backwall = backwall.random()
+   end
+
    -- Pick random coordinates for the camera only for train
    if iterationType == -1 then
       params.cameraLocation = camera.randomLocation()
@@ -173,11 +180,15 @@ function block.MaskingActors()
       end
    end
 
+   if params.isBackwall then
+      backwall.tableInsert(active)
+   end
+
    return active, inactive
 end
 
 function block.MaxActors()
-   return params.n + 2 -- spheres + wall + floor
+   return params.n + 5 -- spheres + occluder + floor + 3*backwall
 end
 
 
@@ -210,7 +221,7 @@ function block.SetBlockTest(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
-   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
+   local file = io.open(config.GetDataPath() .. 'output.txt', "a")
    file:write(currentIteration .. ", " ..
                  iterationId .. ", " ..
                  iterationType .. ", " ..
@@ -267,7 +278,14 @@ function block.RunBlock()
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
 
-   -- wall
+   -- background wall
+   if params.isBackwall then
+      backwall.setup(params.backwall)
+   else
+      backwall.hide()
+   end
+
+   -- occluder
    material.SetActorMaterial(wall, material.wall_materials[params.wall])
    utils.AddTickHook(RemainDown)
    uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)

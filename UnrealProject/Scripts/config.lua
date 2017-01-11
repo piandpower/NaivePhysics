@@ -212,7 +212,7 @@ function config.IterationDescription(iterationBlock, iterationId, iterationType)
       _type = 'test ' .. iterationId ..
          ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')'
    end
-   return _type .. ' (' .. iterationBlock .. ', ' .. config.GetBlockTicks(iterationBlock) .. ' ticks) '
+   return _type .. ' (' .. iterationBlock .. ')'
 end
 
 

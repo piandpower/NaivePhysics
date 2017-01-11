@@ -2,16 +2,17 @@ local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
+local backwall = require 'backwall'
 local camera = require 'camera'
 local block = {}
 
 local floor = uetorch.GetActor('Floor')
-local sphere = uetorch.GetActor("Sphere_4")
-local sphere2 = uetorch.GetActor("Sphere9_4")
-local sphere3 = uetorch.GetActor("Sphere10_7")
+local sphere = uetorch.GetActor("Sphere_1")
+local sphere2 = uetorch.GetActor("Sphere_2")
+local sphere3 = uetorch.GetActor("Sphere_3")
 local spheres = {sphere, sphere2, sphere3}
-local wall1 = uetorch.GetActor("Wall_400x200_8")
-local wall2 = uetorch.GetActor("Wall_400x201_7")
+local wall1 = uetorch.GetActor("Occluder_1")
+local wall2 = uetorch.GetActor("Occluder_2")
 local wall1_boxY,wall2_boxY
 block.actors = {wall1=wall1, wall2=wall2}
 
@@ -158,6 +159,10 @@ function block.MaskingActors()
       end
    end
 
+   if params.isBackwall then
+      backwall.tableInsert(active)
+   end
+
    return active, inactive
 end
 
@@ -208,6 +213,12 @@ local function GetRandomParams()
       n = math.random(1,3)
    }
    params.index = math.random(1, params.n)
+
+   -- Background wall with 50% chance
+   params.isBackwall = (1 == math.random(0, 1)) -- TODO this should be a separate function (in utils)
+   if params.isBackwall then
+      params.backwall = backwall.random()
+   end
 
    -- Pick random coordinates for the camera only for train
    if iterationType == -1 then
@@ -307,7 +318,14 @@ function block.RunBlock()
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
 
-   -- walls
+   -- background wall
+   if params.isBackwall then
+      backwall.setup(params.backwall)
+   else
+      backwall.hide()
+   end
+
+   -- occluders
    material.SetActorMaterial(wall1, material.wall_materials[params.wall])
    uetorch.SetActorScale3D(wall1, params.scaleW, 1, params.scaleH)
    wall1_boxY = uetorch.GetActorBounds(wall1).boxY
