@@ -195,7 +195,7 @@ function block.SetBlockTrain(currentIteration)
    params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
-   visible1 = RandomBool()
+   visible1 = true
    visible2 = visible1
    possible = true
 
