@@ -148,6 +148,7 @@ local function GetRandomParams()
    local params = {
       ground = math.random(#material.ground_materials),
       wall = math.random(#material.wall_materials),
+
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
@@ -161,7 +162,7 @@ local function GetRandomParams()
          math.random(800000, 1100000),
          math.random(800000, 1100000)
       },
-      forceY = {0, 0, 0},
+      forceY = {0, 0, 0}, ---1000000, -1000000, -1000000},
       forceZ = {
          math.random(800000, 1000000),
          math.random(800000, 1000000),
@@ -324,8 +325,7 @@ function block.RunBlock()
       end
 
       uetorch.AddForce(
-         spheres[i], params.forceX[i], params.forceY[i],
-         params.signZ[i] * params.forceZ[i])
+         spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
    end
 end
 

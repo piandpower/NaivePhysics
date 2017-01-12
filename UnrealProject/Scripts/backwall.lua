@@ -31,7 +31,7 @@ end
 
 -- Pick a random width of the U-shaped wall (i.e. lenght of the U bottom)
 function backwall.randomWidth()
-   return math.random(2000, 5000)
+   return math.random(1000, 4000)
 end
 
 -- Generate a random set of attributes for the background wall
@@ -80,7 +80,9 @@ function backwall.hide()
    uetorch.DestroyActor(wallLeft)
 end
 
--- Insert the background wall componants in a table
+-- Insert the background wall componants in a table (this is usefull
+-- for masks computation). TODO here each subwall will have a distinct
+-- mask ID, wheras a single id would be better.
 function backwall.tableInsert(t)
    table.insert(t, uetorch.GetActor('WallBack'))
    table.insert(t, uetorch.GetActor('WallLeft'))
