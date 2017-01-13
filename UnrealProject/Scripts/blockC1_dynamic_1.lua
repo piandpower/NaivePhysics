@@ -139,7 +139,7 @@ end
 
 
 function block.MaxActors()
-   return params.n + 2 -- spheres + wall + floor
+   return params.n + 5 -- spheres + wall + floor + 3*backwall
 end
 
 
@@ -152,11 +152,19 @@ local function GetRandomParams()
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
+
       sphereZ = {
          70 + math.random(200),
          70 + math.random(200),
          70 + math.random(200)
       },
+
+      sphereScale = {
+         math.random() + 0.5,
+         math.random() + 0.5,
+         math.random() + 0.5
+      },
+
       forceX = {
          math.random(800000, 1100000),
          math.random(800000, 1100000),
@@ -168,6 +176,7 @@ local function GetRandomParams()
          math.random(800000, 1000000),
          math.random(800000, 1000000)
       },
+
       signZ = {
          2 * math.random(2) - 3,
          2 * math.random(2) - 3,
@@ -178,6 +187,7 @@ local function GetRandomParams()
          math.random(0,1),
          math.random(0,1)
       },
+
       framesStartDown = math.random(5),
       framesRemainUp = math.random(5),
       scaleW = 0.5,  --0 - 0.5 * math.random(),
@@ -216,7 +226,7 @@ function block.SetBlockTrain(currentIteration)
    params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
-   visible1 = RandomBool()
+   visible1 = true
    visible2 = visible1
    possible = true
 
@@ -322,6 +332,11 @@ function block.RunBlock()
          uetorch.SetActorLocation(
             spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
          params.forceX[i] = -params.forceX[i]
+      end
+
+      if iterationType == -1 then
+         uetorch.SetActorScale3D(
+            spheres[i], params.sphereScale[i], params.sphereScale[i], params.sphereScale[i])
       end
 
       uetorch.AddForce(

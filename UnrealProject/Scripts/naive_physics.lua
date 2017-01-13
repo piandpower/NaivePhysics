@@ -244,6 +244,7 @@ function SetCurrentIteration()
    -- prepare the block for either train or test
    block = require(iterationBlock)
    if iterationType == -1 then -- train
+      block = require('blockC1_train')
       block.SetBlockTrain(currentIteration)
    else -- test
       block.SetBlockTest(currentIteration)

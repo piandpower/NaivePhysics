@@ -210,9 +210,10 @@ function config.IterationDescription(iterationBlock, iterationId, iterationType)
    if iterationType ~= -1 then
       local _n = 1 + config.GetBlockSize(iterationBlock) - iterationType
       _type = 'test ' .. iterationId ..
-         ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')'
+         ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')' ..
+         ' (' .. iterationBlock .. ')'
    end
-   return _type .. ' (' .. iterationBlock .. ')'
+   return _type
 end
 
 

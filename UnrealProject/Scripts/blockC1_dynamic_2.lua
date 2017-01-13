@@ -168,7 +168,7 @@ end
 
 
 function block.MaxActors()
-   return params.n + 3 -- spheres + 2 walls + floor
+   return params.n + 6 -- spheres + 2 walls + floor + 3*backwall
 end
 
 
@@ -176,7 +176,8 @@ end
 local function GetRandomParams()
    local params = {
       ground = math.random(#material.ground_materials),
-      wall = math.random(#material.wall_materials),
+      wall1 = math.random(#material.wall_materials),
+      wall2 = math.random(#material.wall_materials),
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
@@ -185,6 +186,13 @@ local function GetRandomParams()
          70 + math.random(200),
          70 + math.random(200)
       },
+
+      sphereScale = {
+         math.random() + 0.5,
+         math.random() + 0.5,
+         math.random() + 0.5
+      },
+
       forceX = {
          1600000,
          1600000,
@@ -244,7 +252,7 @@ function block.SetBlockTrain(currentIteration)
    params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
-   visible1 = RandomBool()
+   visible1 = true
    visible2 = visible1
    possible = true
 
@@ -326,13 +334,13 @@ function block.RunBlock()
    end
 
    -- occluders
-   material.SetActorMaterial(wall1, material.wall_materials[params.wall])
+   material.SetActorMaterial(wall1, material.wall_materials[params.wall1])
    uetorch.SetActorScale3D(wall1, params.scaleW, 1, params.scaleH)
    wall1_boxY = uetorch.GetActorBounds(wall1).boxY
    uetorch.SetActorLocation(wall1, -200 * params.scaleW, -350, 20 + wall1_boxY)
    uetorch.SetActorRotation(wall1, 0, 0, 90)
 
-   material.SetActorMaterial(wall2, material.wall_materials[params.wall])
+   material.SetActorMaterial(wall2, material.wall_materials[params.wall2])
    uetorch.SetActorScale3D(wall2, params.scaleW, 1, params.scaleH)
    wall2_boxY = uetorch.GetActorBounds(wall2).boxY
    uetorch.SetActorLocation(wall2, 300 - 200 * params.scaleW, -350, 20 + wall2_boxY)
@@ -358,9 +366,14 @@ function block.RunBlock()
          uetorch.SetActorLocation(spheres[i], 700, -550 - 150 * (i - 1), params.sphereZ[i])
          params.forceX[i] = -params.forceX[i]
       end
+
+      if iterationType == -1 then
+         uetorch.SetActorScale3D(
+            spheres[i], params.sphereScale[i], params.sphereScale[i], params.sphereScale[i])
+      end
+
       uetorch.AddForce(
-         spheres[i], params.forceX[i], params.forceY[i],
-         params.signZ[i] * params.forceZ[i])
+         spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
    end
 end
 

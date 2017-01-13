@@ -120,6 +120,13 @@ local function GetRandomParams()
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
+
+      sphereScale = {
+         math.random() + 0.5,
+         math.random() + 0.5,
+         math.random() + 0.5
+      },
+
       framesStartDown = math.random(20),
       framesRemainUp = math.random(20),
       scaleW = 1 - 0.4 * math.random(),
@@ -303,6 +310,13 @@ function block.RunBlock()
    material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
    material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
+
+   if iterationType == -1 then
+      for i = 1,params.n do
+         uetorch.SetActorScale3D(
+            spheres[i], params.sphereScale[i], params.sphereScale[i], params.sphereScale[i])
+      end
+   end
 
    if params.n >= 2 then
       uetorch.SetActorLocation(sphere2, 40,-550, 70)
