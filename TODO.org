@@ -1,10 +1,6 @@
 TODO list for the NaivePhysics project
 
 * Deadlines
-** For 2017-01-15
-*** release of block 1 static
-    - train set and validation set (subsample of the test set)
-    - 1000 videos for training. How many for validation?
 ** For 2017-02-15
 *** release of another block (block 1 dynamic or block 2 -> shape consistency)
     - a new train set, a new validation set
@@ -17,13 +13,9 @@ TODO list for the NaivePhysics project
 *** release of a NaivePhysics-1.0 version as well
 
 * Bugs
-** a minor bug in C1_dynamic_1?
-*** Sometimes the main actor move slower in 2nd than in 1st iteration?
-    Lead to a check failure in all cases but this is a waste of time
-    and resources
-*** optimize checks in C1_dynamic_1
-    - detect failures right after iterationType 5, not after the whole run!!
-    - as done in C1_dynamic_2 block
+** optimize checks in C1_dynamic_1
+   - detect failures right after iterationType 5, not after the whole run!!
+   - as done in C1_dynamic_2 block
 ** parallelization
 *** test -j2 and -j3
 *** fix the bug in balancing jsons
@@ -37,7 +29,6 @@ TODO list for the NaivePhysics project
    - random cloud position/orientaion/speed
    - random light position/number -> variable shadows
    - random camera position -> random position and point of view, constrained orientation
-   - for now all spheres/walls have the same material within a run, is it ok?
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
 ** on training
@@ -45,9 +36,6 @@ TODO list for the NaivePhysics project
     a posteriori: just parse the status.txt?
 *** random spheres and walls
     - walls with left/right rotations, mobile/immobile spheres
-    - non parallel trajectories for spheres
-    - world limit with walls or sky randomly
-
 ** format params.json to have spaces and new lines
 ** refactor status.txt
 

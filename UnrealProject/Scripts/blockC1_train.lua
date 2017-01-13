@@ -121,11 +121,19 @@ local function GetRandomParams()
 
       -- occluders
       nOccluders = math.random(0, 2),
+
       occluder1 = math.random(#material.wall_materials),
       occluder2 = math.random(#material.wall_materials),
+
+      -- occluder1RotationZ = math.random(1, 360),
+      -- occluder2RotationZ = math.random(1, 360),
+
       framesStartDown = math.random(5),
+
       framesRemainUp = math.random(5),
-      scaleW = 1 - 0.5 * math.random(),
+
+      scaleW = 0.5,  -- 1 - 0.5 * math.random(),
+
       scaleH = 1 - 0.4 * math.random(),
 
       -- spheres
@@ -139,12 +147,14 @@ local function GetRandomParams()
          70 + math.random(200)
       },
 
+      -- scale in [1/2, 3/2], keep it a sphere -> scaling in all axes
       sphereScale = {
          math.random() + 0.5,
          math.random() + 0.5,
          math.random() + 0.5
       },
 
+      -- 25% chance the sphere don't move (no force applied)
       sphereIsStatic = {
          math.random(1, 100) <= 25,
          math.random(1, 100) <= 25,
@@ -185,7 +195,7 @@ local function GetRandomParams()
       params.backwall = backwall.random()
    end
 
-   -- Pick random coordinates for the camera only for train
+   -- Pick random coordinates for the camera
    params.cameraLocation = camera.randomLocation()
    params.cameraRotation = camera.randomRotation()
 
@@ -193,7 +203,7 @@ local function GetRandomParams()
 end
 
 
-function block.SetBlockTrain(currentIteration)
+function block.SetBlock(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
@@ -236,6 +246,7 @@ function block.RunBlock()
       material.SetActorMaterial(occluder1, material.wall_materials[params.occluder1])
       uetorch.SetActorScale3D(occluder1, params.scaleW, 1, params.scaleH)
       uetorch.SetActorLocation(occluder1, -200 * params.scaleW, -350, 20 + occluder1_boxY)
+      -- uetorch.SetActorRotation(occluder1, 0, 0, occluder1RotationZ)
       uetorch.SetActorRotation(occluder1, 0, 0, 90)
    else
       uetorch.DestroyActor(occluder1)
@@ -245,6 +256,7 @@ function block.RunBlock()
       material.SetActorMaterial(occluder2, material.wall_materials[params.occluder2])
       uetorch.SetActorScale3D(occluder2, params.scaleW, 1, params.scaleH)
       uetorch.SetActorLocation(occluder2, 300 - 200 * params.scaleW, -350, 20 + occluder2_boxY)
+      -- uetorch.SetActorRotation(occluder2, 0, 0, occluder2RotationZ)
       uetorch.SetActorRotation(occluder2, 0, 0, 90)
    else
       uetorch.DestroyActor(occluder2)

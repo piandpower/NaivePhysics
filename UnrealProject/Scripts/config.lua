@@ -44,11 +44,13 @@ conf = {
    dataPath = assert(os.getenv('NAIVEPHYSICS_DATA')),
    loadParams = false,
    captureInterval = {
+      blockC1_train = 2,
       blockC1_static = 2,
       blockC1_dynamic_1 = 2,
       blockC1_dynamic_2 = 2
    },
    sceneTicks = {
+      blockC1_train = 201,
       blockC1_static = 201,
       blockC1_dynamic_1 = 201,
       blockC1_dynamic_2 = 201
@@ -61,6 +63,7 @@ conf = {
       block5a = 1
    },
    tupleSize = {
+      blockC1_train = 1,
       blockC1_static = 4,
       blockC1_dynamic_1 = 4,
       blockC1_dynamic_2 = 4,
@@ -78,8 +81,13 @@ function SetIterationsCounter()
    -- iterations depends on the block type
    local train_runs, test_runs, test_iterations = 0, 0, 0
    for block, iters in pairs(config.GetBlocks()) do
-      train_runs = train_runs + assert(iters.train)
-      test_runs = test_runs + assert(iters.test)
+      for subblock, nb in pairs(iters) do
+         if string.match(subblock, 'train') then
+            train_runs = train_runs + nb
+         else
+            test_runs = test_runs + nb
+         end
+      end
    end
 
    if test_runs + train_runs == 0 then
@@ -93,21 +101,28 @@ function SetIterationsCounter()
    -- put the detail of each iteration into a table
    local n, id_train, id_test, iterationsTable = 1, 1, 1, {}
    for block, iters in pairs(config.GetBlocks()) do
-      -- setup train iterations for the current block
-      for id = 1, iters.train do
-         iterationsTable[n] = {iterationBlock=block, iterationType=-1, iterationId=id_train}
-         n = n + 1
-         id_train = id_train + 1
-      end
+      for subblock, nb in pairs(iters) do
+         local blockName = block .. '_' .. subblock
 
-      -- setup test iterations for the current block
-      local ntypes = config.GetTupleSize(block) + config.GetVisibilityCheckSize(block)
-      for id = 1, iters.test do
-         for t = ntypes, 1, -1 do
-            iterationsTable[n] = {iterationBlock=block, iterationType=t, iterationId=id_test}
-            n = n + 1
+         -- setup train iterations for the current block
+         if string.match(subblock, "train") then
+            for id = 1, nb do
+               iterationsTable[n] = {
+                  iterationBlock=blockName, iterationType=-1, iterationId=id_train}
+               n = n + 1
+               id_train = id_train + 1
+            end
+         else
+            -- setup test iterations for the current block
+            local ntypes = config.GetTupleSize(blockName) + config.GetVisibilityCheckSize(blockName)
+            for id = 1, nb do
+               for t = ntypes, 1, -1 do
+                  iterationsTable[n] = {iterationBlock=blockName, iterationType=t, iterationId=id_test}
+                  n = n + 1
+               end
+               id_test = id_test + 1
+            end
          end
-         id_test = id_test + 1
       end
    end
 
@@ -177,7 +192,9 @@ function config.GetIterationInfo(iteration)
       iterationsTable = ReadJson(conf.dataPath .. 'iterations_table.json')
       maxId = 0
       for k, v in pairs(conf.blocks) do
-         maxId = math.max(maxId, v.test, v.train)
+         for kk, vv in pairs(v) do
+            maxId = math.max(maxId, vv)
+         end
       end
    end
 
@@ -185,8 +202,9 @@ function config.GetIterationInfo(iteration)
    local i = assert(iterationsTable[tonumber(iteration)])
 
    -- get the output directory for that iteration
-   subpath = 'train/'
-   if i.iterationType ~= -1 then
+   if i.iterationType == -1 then
+      subpath = 'train/'
+   else
       subpath = 'test/'
    end
 
@@ -210,10 +228,9 @@ function config.IterationDescription(iterationBlock, iterationId, iterationType)
    if iterationType ~= -1 then
       local _n = 1 + config.GetBlockSize(iterationBlock) - iterationType
       _type = 'test ' .. iterationId ..
-         ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')' ..
-         ' (' .. iterationBlock .. ')'
+         ' (' .. _n .. '/' .. config.GetBlockSize(iterationBlock) .. ')'
    end
-   return _type
+   return _type .. ' (' .. iterationBlock .. ')'
 end
 
 

@@ -242,13 +242,12 @@ function SetCurrentIteration()
    end
 
    -- prepare the block for either train or test
+   -- if iterationType == -1 then -- train
+   --    block = require('blockC1_train')
+   -- else
    block = require(iterationBlock)
-   if iterationType == -1 then -- train
-      block = require('blockC1_train')
-      block.SetBlockTrain(currentIteration)
-   else -- test
-      block.SetBlockTest(currentIteration)
-   end
+   -- end
+   block.SetBlock(currentIteration)
 
    -- RunBlock will be called from blueprint
    RunBlock = function() return block.RunBlock() end

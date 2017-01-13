@@ -77,6 +77,7 @@ function utils.Tick(dt)
    dt = 1
    if TicksRemaining then
       TicksRemaining = TicksRemaining - dt
+      -- print('remaining ' .. TicksRemaining)
       if TicksRemaining < 0 then
          TicksRemaining = nil
          for ii, hook in ipairs(EndTickHooks) do
