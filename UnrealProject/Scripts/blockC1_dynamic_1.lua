@@ -102,14 +102,23 @@ end
 -- computation. Inactive actor is the main sphere when twicked (not
 -- rendered)
 function block.MaskingActors()
-   local active, inactive = {}, {}
+   local active, inactive, text = {}, {}, {}
+
+   if params.isBackwall then
+      backwall.tableInsert(active, text)
+   end
+
    table.insert(active, floor)
    table.insert(active, wall)
+
+   table.insert(text, "floor")
+   table.insert(text, "wall")
 
    -- on test, the main actor only can be inactive (when hidden)
    for i = 1, params.n do
       if i ~= params.index then
          table.insert(active, spheres[i])
+         table.insert(text, 'sphere' .. i)
       end
    end
 
@@ -119,12 +128,9 @@ function block.MaskingActors()
       or (not possible and visible2 and trick) -- visible 2nd half
    then
       table.insert(active, mainActor)
+      table.insert(text, 'sphere' .. params.index)
    else
       table.insert(inactive, mainActor)
-   end
-
-   if params.isBackwall then
-      backwall.tableInsert(active)
    end
 
    return active, inactive

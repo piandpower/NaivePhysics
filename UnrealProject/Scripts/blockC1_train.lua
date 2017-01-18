@@ -28,22 +28,27 @@ end
 
 
 function block.MaskingActors()
-   local active, inactive = {}, {}
-   local a = {table.unpack(spheres)}
+   local active, inactive, text = {}, {}, {}
+
+   if params.isBackwall then
+      backwall.tableInsert(active, text)
+   end
+
    table.insert(active, occluder1)
    table.insert(active, occluder2)
    table.insert(active, floor)
 
-   if params.isBackwall then
-      backwall.tableInsert(active)
-   end
+   table.insert(text, "occluder1")
+   table.insert(text, "occluder2")
+   table.insert(text, "floor")
 
    -- on train, we don't have any inactive actor
-   for _, s in pairs(spheres) do
+   for n, s in pairs(spheres) do
       table.insert(active, s)
+      table.insert(text, 'sphere' .. n)
    end
 
-   return active, inactive
+   return active, inactive, text
 end
 
 

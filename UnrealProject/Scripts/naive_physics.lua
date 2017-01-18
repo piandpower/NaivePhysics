@@ -71,7 +71,7 @@ local function SaveScreen(dt)
 
       -- active and inactive actors in the scene are required for
       -- depth and mask
-      local active_actors, inactive_actors = block.MaskingActors()
+      local active_actors, inactive_actors, _ = block.MaskingActors()
 
       -- compute the depth field and objects segmentation masks
       local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
@@ -195,12 +195,19 @@ local function SaveData()
       file:write("minX = " .. minx .. " maxX = " .. maxx ..
                     " minY = " .. miny .. " maxY = " .. maxy .. "\n")
 
-      file:write("camera\n")
+      file:write("camera:\n")
       local cam_loc = uetorch.GetActorLocation(camera)
       local cam_rot = uetorch.GetActorRotation(camera)
       file:write("x = " .. cam_loc.x .. " y = " .. cam_loc.y .. " z = " .. cam_loc.z .. "\n")
       file:write("pitch = " .. cam_rot.pitch .. " roll = " .. cam_rot.roll ..
                     " yaw = " .. cam_rot.yaw .. "\n")
+
+      file:write("masks:\n")
+      local _, _, masks = block.MaskingActors()
+      for n, m in pairs(masks) do
+         file:write(n .. ' = ' .. m .. ' ')
+      end
+      file:write('\n')
 
       local nactors = 0
       for k,v in pairs(block.actors) do

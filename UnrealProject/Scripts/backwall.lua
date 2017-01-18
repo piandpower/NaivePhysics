@@ -83,10 +83,14 @@ end
 -- Insert the background wall componants in a table (this is usefull
 -- for masks computation). TODO here each subwall will have a distinct
 -- mask ID, wheras a single id would be better.
-function backwall.tableInsert(t)
-   table.insert(t, wallBack)
-   table.insert(t, wallLeft)
-   table.insert(t, wallRight)
+function backwall.tableInsert(tActor, tText)
+   table.insert(tActor, wallBack)
+   table.insert(tActor, wallLeft)
+   table.insert(tActor, wallRight)
+
+   table.insert(tText, "wallBack")
+   table.insert(tText, "wallLeft")
+   table.insert(tText, "wallRight")
 end
 
 return backwall

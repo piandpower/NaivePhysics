@@ -152,33 +152,38 @@ function block.MainActor()
 end
 
 function block.MaskingActors()
-   local active, inactive = {}, {}
+   local active, inactive, text = {}, {}, {}
+
+   if params.isBackwall then
+      backwall.tableInsert(active, text)
+   end
+
    table.insert(active, wall)
    table.insert(active, floor)
+
+   table.insert(text, "wall")
+   table.insert(text, "floor")
 
    -- on test, the main actor only can be inactive (when hidden)
    for i = 1, params.n do
       if i ~= params.index then
          table.insert(active, spheres[i])
+         table.insert(text, "sphere" .. i)
       end
    end
 
-   table.insert(active, mainActor)
    -- We add the main actor as active only when it's not hidden
    if (possible and visible1) -- visible all time
       or (not possible and visible1 and not trick1) -- visible 1st half
       or (not possible and visible2 and trick1) -- visible 2nd half
    then
       table.insert(active, mainActor)
+      table.insert(text, "sphere" .. params.index)
    else
       table.insert(inactive, mainActor)
    end
 
-   if params.isBackwall then
-      backwall.tableInsert(active)
-   end
-
-   return active, inactive
+   return active, inactive, text
 end
 
 function block.MaxActors()
