@@ -49,26 +49,16 @@ import time
 # an exemple of a config file to feed the NaivePhysics data generator
 JSON_EXEMPLE = '''
 {
-    "blockC1_static" :
+    "blockC1" :
     {
-        "train": 100,
-        "test": 20
-    },
-    "blockC1_dynamic_1" :
-    {
-        "train": 0,
-        "test": 0
-    },
-    "blockC1_dynamic_2" :
-    {
-        "train": 0,
-        "test": 0
+        "train" : 100,
+        "static" : 5,
+        "dynamic_1" : 5,
+        "dynamic_2" : 5
     }
 }
-'''
 
-# blocks actually implemented in the lua scripts
-BLOCKS_AVAILABLE = ['blockC1_static', 'blockC1_dynamic_1', 'blockC1_dynamic_2']
+This generates 100 train videos and 15 test videos (5 for each variant).'''
 
 # path to packaged the NaivePhysics binary (environment variable has
 # been setup in activate-naivephysics)
@@ -183,8 +173,7 @@ def ParseArgs():
     parser.add_argument(
         'config_file', metavar='<json-file>', help=(
             'json configuration file defining the number of test and train '
-            'iterations to run for each block, supported blocks are: {}.'
-            .format(', '.join(BLOCKS_AVAILABLE))))
+            'iterations to run for each block, see exemple below.'))
 
     parser.add_argument(
         'output_dir', metavar='<output-dir>', help='''
@@ -230,8 +219,8 @@ def _BalanceConfig(config, njobs):
     total_runs = 0
     for k, v in config.iteritems():
         # this is a rough approximation of the real workload, to
-        # refine it we must discriminate blocks and get nb ticks (120
-        # or 200) and nb of test iterations (5 or 6)
+        # refine it we must discriminate blocks and get nb of test
+        # iterations (5 or 6)
         total_iterations += v['train']
         total_iterations += v['test'] * 5
 
@@ -307,6 +296,7 @@ def _Run(command, log, config_file, output_dir, seed=None, dry=False):
     environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
     if dry:
         environ['NAIVEPHYSICS_DRY'] = 'true'
+        log.info('running in dry mode: do not capture any image')
     if seed is not None:
         environ['NAIVEPHYSICS_SEED'] = str(seed)
 

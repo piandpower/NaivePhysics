@@ -3,6 +3,7 @@ local config = require 'config'
 local utils = require 'utils'
 local material = require 'material'
 local backwall = require 'backwall'
+local occluder = require 'occluder'
 local camera = require 'camera'
 local block = {}
 
@@ -18,68 +19,6 @@ block.actors = {occluder1=occluder1, occluder2=occluder2}
 
 local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
-local isHidden1,isHidden2
-
-
-local t_rotation = 0
-local t_rotation_change = 0
-
-local function WallRotationDown(dt)
-   local angle = (t_rotation - t_rotation_change) * 20 * 0.125
-   local succ = uetorch.SetActorRotation(occluder1, 0, 0, angle)
-   local succ2 = uetorch.SetActorRotation(occluder2, 0, 0, angle)
-
-   uetorch.SetActorLocation(
-      occluder1, -200 * params.scaleW, -350,
-      20 + math.sin(angle * math.pi / 180) * occluder1_boxY)
-
-   uetorch.SetActorLocation(
-      occluder2, 300 - 200 * params.scaleW, -350,
-      20 + math.sin(angle * math.pi / 180) * occluder2_boxY)
-
-   if angle >= 90 then
-      utils.RemoveTickHook(WallRotationDown)
-      t_rotation_change = t_rotation
-   end
-   t_rotation = t_rotation + dt
-end
-
-local function RemainUp(dt)
-   params.framesRemainUp = params.framesRemainUp - 1
-   if params.framesRemainUp == 0 then
-      utils.RemoveTickHook(RemainUp)
-      utils.AddTickHook(WallRotationDown)
-   end
-end
-
-local function WallRotationUp(dt)
-   local angle = (t_rotation - t_rotation_change) * 20 * 0.125
-   local succ = uetorch.SetActorRotation(occluder1, 0, 0, 90 - angle)
-   local succ2 = uetorch.SetActorRotation(occluder2, 0, 0, 90 - angle)
-
-   uetorch.SetActorLocation(
-      occluder1, -200 * params.scaleW, -350,
-      20 + math.sin((90 - angle) * math.pi / 180) * occluder1_boxY)
-
-   uetorch.SetActorLocation(
-      occluder2, 300 - 200 * params.scaleW, -350,
-      20 + math.sin((90 - angle) * math.pi / 180) * occluder2_boxY)
-
-   if angle >= 90 then
-      utils.RemoveTickHook(WallRotationUp)
-      utils.AddTickHook(RemainUp)
-      t_rotation_change = t_rotation
-   end
-   t_rotation = t_rotation + dt
-end
-
-local function StartDown(dt)
-   params.framesStartDown = params.framesStartDown - 1
-   if params.framesStartDown == 0 then
-      utils.RemoveTickHook(StartDown)
-      utils.AddTickHook(WallRotationUp)
-   end
-end
 
 
 local mainActor
@@ -95,13 +34,13 @@ function block.MaskingActors()
    table.insert(active, occluder2)
    table.insert(active, floor)
 
+   if params.isBackwall then
+      backwall.tableInsert(active)
+   end
+
    -- on train, we don't have any inactive actor
    for _, s in pairs(spheres) do
       table.insert(active, s)
-   end
-
-   if params.isBackwall then
-      backwall.tableInsert(active)
    end
 
    return active, inactive
@@ -109,7 +48,8 @@ end
 
 
 function block.MaxActors()
-   return params.n + 6 -- spheres + 2 walls + floor + backwall*3
+   -- spheres + occluders + floor + backwall*3
+   return params.n + params.nOccluders + 4
 end
 
 
@@ -121,20 +61,6 @@ local function GetRandomParams()
 
       -- occluders
       nOccluders = math.random(0, 2),
-
-      occluder1 = math.random(#material.wall_materials),
-      occluder2 = math.random(#material.wall_materials),
-
-      -- occluder1RotationZ = math.random(1, 360),
-      -- occluder2RotationZ = math.random(1, 360),
-
-      framesStartDown = math.random(5),
-
-      framesRemainUp = math.random(5),
-
-      scaleW = 0.5,  -- 1 - 0.5 * math.random(),
-
-      scaleH = 1 - 0.4 * math.random(),
 
       -- spheres
       n = math.random(1,3),
@@ -196,8 +122,13 @@ local function GetRandomParams()
    end
 
    -- Pick random coordinates for the camera
-   params.cameraLocation = camera.randomLocation()
-   params.cameraRotation = camera.randomRotation()
+   params.camera = camera.random()
+
+   -- Pick random attributes for each occluder
+   params.occluder = {}
+   for i=1, params.nOccluders do
+      table.insert(params.occluder, occluder.random())
+   end
 
    return params
 end
@@ -226,7 +157,7 @@ end
 
 function block.RunBlock()
    -- camera
-   camera.setup(iterationType, 150, params.cameraLocation, params.cameraRotation)
+   camera.setup(iterationType, 150, params.camera)
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
@@ -239,30 +170,16 @@ function block.RunBlock()
    end
 
    -- occluders
-   occluder1_boxY = uetorch.GetActorBounds(occluder1).boxY
-   occluder2_boxY = uetorch.GetActorBounds(occluder2).boxY
-
-   if params.nOccluders >= 1 then
-      material.SetActorMaterial(occluder1, material.wall_materials[params.occluder1])
-      uetorch.SetActorScale3D(occluder1, params.scaleW, 1, params.scaleH)
-      uetorch.SetActorLocation(occluder1, -200 * params.scaleW, -350, 20 + occluder1_boxY)
-      -- uetorch.SetActorRotation(occluder1, 0, 0, occluder1RotationZ)
-      uetorch.SetActorRotation(occluder1, 0, 0, 90)
-   else
-      uetorch.DestroyActor(occluder1)
+   for i = 1,2 do
+      if params.occluder[i] == nil then
+         occluder.hide(i)
+      else
+         occluder.setup(i, params.occluder[i])
+      end
    end
 
-   if params.nOccluders >= 2 then
-      material.SetActorMaterial(occluder2, material.wall_materials[params.occluder2])
-      uetorch.SetActorScale3D(occluder2, params.scaleW, 1, params.scaleH)
-      uetorch.SetActorLocation(occluder2, 300 - 200 * params.scaleW, -350, 20 + occluder2_boxY)
-      -- uetorch.SetActorRotation(occluder2, 0, 0, occluder2RotationZ)
-      uetorch.SetActorRotation(occluder2, 0, 0, 90)
-   else
-      uetorch.DestroyActor(occluder2)
-   end
-
-   utils.AddTickHook(StartDown)
+   utils.AddTickHook(occluder.tick)
+   --utils.AddTickHook(StartDown)
 
    -- spheres
    uetorch.SetActorVisible(sphere, true)

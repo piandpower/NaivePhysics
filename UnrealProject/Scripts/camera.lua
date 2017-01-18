@@ -27,26 +27,36 @@ function camera.randomRotation()
 end
 
 
+-- Get random parameters for the camera
+function camera.random()
+   return {
+      location = camera.randomLocation(),
+      rotation = camera.randomRotation()
+   }
+end
+
+
 -- Setup the camera location and rotation
 --
--- locationShift and rotationShift are considered only for train (when
+-- params must be a table structured as the on eone returned by
+-- camera.random(). Params are considered only for train (when
 -- iterationType is -1), the camera location on the x axis varies
 -- across blocks and is therefore given as a parameter.
-function camera.setup(iterationType, xLocation, locationShift, rotationShift)
+function camera.setup(iterationType, xLocation, params)
    local cameraActor = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
 
    if iterationType == -1 then  -- train
       uetorch.SetActorLocation(
          cameraActor,
-         xLocation + locationShift[1],
-         30 + locationShift[2],
-         80 + locationShift[3])
+         xLocation + params.location[1],
+         30 + params.location[2],
+         80 + params.location[3])
 
       uetorch.SetActorRotation(
          cameraActor,
-         0 + rotationShift[1],
-         -90 + rotationShift[2],
-         0 + rotationShift[3])
+         0 + params.rotation[1],
+         -90 + params.rotation[2],
+         0 + params.rotation[3])
    else
       uetorch.SetActorLocation(cameraActor, xLocation, 30, 80)
       uetorch.SetActorRotation(cameraActor, 0, -90, 0)

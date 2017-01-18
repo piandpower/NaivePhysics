@@ -228,39 +228,8 @@ local function GetRandomParams()
       params.backwall = backwall.random()
    end
 
-   -- Pick random coordinates for the camera only for train
-   if iterationType == -1 then
-      params.cameraLocation = camera.randomLocation()
-      params.cameraRotation = camera.randomRotation()
-   end
-
    return params
 end
-
-
--- function block.SetBlockTrain(currentIteration)
---    iterationId, iterationType, iterationBlock, iterationPath =
---       config.GetIterationInfo(currentIteration)
-
---    local file = io.open (config.GetDataPath() .. 'output.txt', "a")
---    file:write(currentIteration .. ", " ..
---                  iterationId .. ", " ..
---                  iterationType .. ", " ..
---                  iterationBlock .. "\n")
---    file:close()
-
---    params = GetRandomParams()
---    WriteJson(params, iterationPath .. 'params.json')
-
---    visible1 = true
---    visible2 = visible1
---    possible = true
-
---    mainActor = spheres[params.index]
---    for i = 1, params.n do
---       block.actors['sphere' .. i] = spheres[i]
---    end
--- end
 
 
 function block.SetBlock(currentIteration)
@@ -321,7 +290,7 @@ end
 
 function block.RunBlock()
    -- camera
-   camera.setup(iterationType, 150, params.cameraLocation, params.cameraRotation)
+   camera.setup(iterationType, 150)
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])

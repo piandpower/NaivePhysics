@@ -34,10 +34,8 @@ local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
 math.randomseed(seed)
 posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
+-- Setup the dry mode: if active, do not capture any screenshot
 local dry_run = os.getenv('NAIVEPHYSICS_DRY') or false
-if dry_run then
-   print('dry run: do not capture any image')
-end
 
 -- functions called from MainMap_CameraActor_Blueprint
 GetCurrentIteration = utils.GetCurrentIteration
@@ -72,7 +70,7 @@ local function SaveScreen(dt)
       -- depth and mask
       local active_actors, inactive_actors = block.MaskingActors()
 
-      -- compute the depth field and objects segmentatio masks
+      -- compute the depth field and objects segmentation masks
       local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
       local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local camera = assert(
