@@ -53,6 +53,9 @@ local tSaveScreen = 0
 local step = 0
 local max_depth = 0
 
+local camera = assert(uetorch.GetActor("Camera"))
+
+
 -- Save screenshot, object masks and depth field into png images
 local function SaveScreen(dt)
    if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
@@ -73,8 +76,6 @@ local function SaveScreen(dt)
       -- compute the depth field and objects segmentation masks
       local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
       local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
-      local camera = assert(
-         uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0"))
       local i2, i3 = uetorch.CaptureDepthAndMasks(
          camera, active_actors, inactive_actors)
 
@@ -134,7 +135,6 @@ local function CheckVisibility(dt)
       step = step + 1
       local stepStr = PadZeros(step, 3)
 
-      -- local file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local actors = {block.MainActor()}
       local i2 = uetorch.ObjectSegmentation(actors)
 
@@ -176,9 +176,8 @@ local function SaveData()
 
       torch.save(iterationPath .. '../hidden_' .. iterationType .. '.t7', isHidden)
    else
-      -- TODO need to be refactored, better if we have a
-      -- status/status_n.txt file per tick (to be consistent with
-      -- depth/scene folders). Or at least a json structure as well
+      -- TODO need to be refactored, better if we have a json
+      -- structure as well
       local filename = iterationPath .. 'status.txt'
       local file = assert(io.open(filename, "w"))
       file:write("block = " .. iterationBlock .. "\n")
@@ -197,6 +196,13 @@ local function SaveData()
       local maxy = bounds["y"] + bounds["boxY"]
       file:write("minX = " .. minx .. " maxX = " .. maxx ..
                     " minY = " .. miny .. " maxY = " .. maxy .. "\n")
+
+      file:write("camera\n")
+      local cam_loc = uetorch.GetActorLocation(camera)
+      local cam_rot = uetorch.GetActorRotation(camera)
+      file:write("x = " .. cam_loc.x .. " y = " .. cam_loc.y .. " z = " .. cam_loc.z .. "\n")
+      file:write("pitch = " .. cam_rot.pitch .. " roll = " .. cam_rot.roll ..
+                    " yaw = " .. cam_rot.yaw .. "\n")
 
       local nactors = 0
       for k,v in pairs(block.actors) do

@@ -9,9 +9,9 @@ local camera = {}
 
 function camera.randomLocation()
    local cameraLocation = {
-      math.random(-50, 50), -- x axis is left/right
-      math.random(-50, 150), -- y axis is front/back
-      math.random(-10, 50)  -- z axis is up/down
+      math.random(-100, 100), -- x axis is left/right
+      math.random(-50, 200), -- y axis is front/back
+      math.random(-10, 100)  -- z axis is up/down
    }
    -- print('camera y location is ' .. cameraLocation[2])
    return cameraLocation
@@ -43,7 +43,7 @@ end
 -- iterationType is -1), the camera location on the x axis varies
 -- across blocks and is therefore given as a parameter.
 function camera.setup(iterationType, xLocation, params)
-   local cameraActor = uetorch.GetActor("MainMap_CameraActor_Blueprint_C_0")
+   local cameraActor = uetorch.GetActor("Camera")
 
    if iterationType == -1 then  -- train
       uetorch.SetActorLocation(
