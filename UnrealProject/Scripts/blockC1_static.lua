@@ -156,29 +156,22 @@ function block.MaskingActors()
    table.insert(active, wall)
    table.insert(active, floor)
 
-   if iterationType == -1 then
-      -- on train, we don't have any inactive actor
-      for _, s in pairs(spheres) do
-         table.insert(active, s)
+   -- on test, the main actor only can be inactive (when hidden)
+   for i = 1, params.n do
+      if i ~= params.index then
+         table.insert(active, spheres[i])
       end
-   else
-      -- on test, the main actor only can be inactive (when hidden)
-      for i = 1, params.n do
-         if i ~= params.index then
-            table.insert(active, spheres[i])
-         end
-      end
+   end
 
+   table.insert(active, mainActor)
+   -- We add the main actor as active only when it's not hidden
+   if (possible and visible1) -- visible all time
+      or (not possible and visible1 and not trick1) -- visible 1st half
+      or (not possible and visible2 and trick1) -- visible 2nd half
+   then
       table.insert(active, mainActor)
-      -- We add the main actor as active only when it's not hidden
-      if (possible and visible1) -- visible all time
-         or (not possible and visible1 and not trick1) -- visible 1st half
-         or (not possible and visible2 and trick1) -- visible 2nd half
-      then
-         table.insert(active, mainActor)
-      else
-         table.insert(inactive, mainActor)
-      end
+   else
+      table.insert(inactive, mainActor)
    end
 
    if params.isBackwall then
@@ -272,20 +265,9 @@ function block.RunBlock()
    -- spheres
    uetorch.SetActorLocation(sphere, 150, -550, 70)
    uetorch.SetActorVisible(spheres[params.index], visible1)
-   if not visible1 and iterationType == -1 then
-      uetorch.DestroyActor(spheres[params.index])
-   end
-
    material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
    material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
-
-   if iterationType == -1 then
-      for i = 1,params.n do
-         uetorch.SetActorScale3D(
-            spheres[i], params.sphereScale[i], params.sphereScale[i], params.sphereScale[i])
-      end
-   end
 
    if params.n >= 2 then
       uetorch.SetActorLocation(sphere2, 40,-550, 70)

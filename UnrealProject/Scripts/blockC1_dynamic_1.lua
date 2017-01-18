@@ -106,28 +106,21 @@ function block.MaskingActors()
    table.insert(active, floor)
    table.insert(active, wall)
 
-   if iterationType == -1 then
-      -- on train, we don't have any inactive actor
-      for _, s in pairs(spheres) do
-         table.insert(active, s)
+   -- on test, the main actor only can be inactive (when hidden)
+   for i = 1, params.n do
+      if i ~= params.index then
+         table.insert(active, spheres[i])
       end
-   else
-      -- on test, the main actor only can be inactive (when hidden)
-      for i = 1, params.n do
-         if i ~= params.index then
-            table.insert(active, spheres[i])
-         end
-      end
+   end
 
-      -- We add the main actor as active only when it's not hidden
-      if (possible and visible1) -- visible all time
-         or (not possible and visible1 and not trick) -- visible 1st half
-         or (not possible and visible2 and trick) -- visible 2nd half
-      then
-         table.insert(active, mainActor)
-      else
-         table.insert(inactive, mainActor)
-      end
+   -- We add the main actor as active only when it's not hidden
+   if (possible and visible1) -- visible all time
+      or (not possible and visible1 and not trick) -- visible 1st half
+      or (not possible and visible2 and trick) -- visible 2nd half
+   then
+      table.insert(active, mainActor)
+   else
+      table.insert(inactive, mainActor)
    end
 
    if params.isBackwall then
@@ -284,10 +277,6 @@ function block.RunBlock()
 
    -- spheres
    uetorch.SetActorVisible(spheres[params.index], visible1)
-   if not visible1 and iterationType == -1 then
-      uetorch.DestroyActor(spheres[params.index])
-   end
-
    material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
    material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
@@ -301,11 +290,6 @@ function block.RunBlock()
          uetorch.SetActorLocation(
             spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
          params.forceX[i] = -params.forceX[i]
-      end
-
-      if iterationType == -1 then
-         uetorch.SetActorScale3D(
-            spheres[i], params.sphereScale[i], params.sphereScale[i], params.sphereScale[i])
       end
 
       uetorch.AddForce(

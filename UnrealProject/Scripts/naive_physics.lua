@@ -139,8 +139,6 @@ local function CheckVisibility(dt)
       local i2 = uetorch.ObjectSegmentation(actors)
 
       if i2 then
-         -- image.save(file, i2)
-
          if torch.max(i2) == 0 then
             hidden = true
          else
