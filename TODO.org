@@ -28,17 +28,10 @@ TODO list for the NaivePhysics project
 ** scene variability
    - random cloud position/orientaion/speed
    - random light position/number -> variable shadows
-   - random camera position -> random position and point of view, constrained orientation
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
-** on training
-*** check at least one object visible and one occlusion
-    a posteriori: just parse the status.txt?
-*** random spheres and walls
-    - walls with left/right rotations, mobile/immobile spheres
 ** format params.json to have spaces and new lines
 ** refactor status.txt
-
 ** run on a headless cluster
 *** The problem is remote openGl rendering
 - with DISPLAY=:0 that works remotely but corrupt the host's X server!
