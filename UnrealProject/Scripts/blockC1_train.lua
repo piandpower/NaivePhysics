@@ -80,9 +80,9 @@ local function GetRandomParams()
 
       -- scale in [1/2, 3/2], keep it a sphere -> scaling in all axes
       sphereScale = {
-         math.random() + 0.5,
-         math.random() + 0.5,
-         math.random() + 0.5
+         math.random() + 1,
+         math.random() + 1,
+         math.random() + 1
       },
 
       -- 25% chance the sphere don't move (no force applied)
@@ -194,11 +194,10 @@ function block.RunBlock()
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
 
    for i = 1,params.n do
-      uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
       if params.left[i] == 1 then
          uetorch.SetActorLocation(spheres[i], -400, -550 - 150 * (i - 1), params.sphereZ[i])
       else
-         uetorch.SetActorLocation(spheres[i], 700, -550 - 150 * (i - 1), params.sphereZ[i])
+         uetorch.SetActorLocation(spheres[i], 500, -550 - 150 * (i - 1), params.sphereZ[i])
          params.forceX[i] = -params.forceX[i]
       end
 

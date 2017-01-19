@@ -26,7 +26,7 @@ end
 
 -- Pick a random distance from the camera for the background wall
 function backwall.randomDepth()
-   return math.random(-1400, -800)
+   return math.random(-1500, -900)
 end
 
 -- Pick a random width of the U-shaped wall (i.e. lenght of the U bottom)

@@ -37,7 +37,7 @@ end
 
 -- Random rotation on the Z axis
 function occluder.randomRotation()
-   return math.random(-60, 60)
+   return math.random(-45, 45)
 end
 
 
@@ -54,9 +54,9 @@ end
 -- Pick a random scale for wall dimensions
 function occluder.randomScale()
    return {
-      0.25 * math.random(1, 4),
-      1, --math.random(1, 6) / 2,
-      1 - 0.6 * math.random()
+      math.random() + 0.5,
+      1,
+      1.5 - 0.3 * math.random()
    }
 end
 
@@ -106,7 +106,7 @@ function occluder.setup(id, params)
    if id == 2 then
       mesh = occluder2
       box = occluder2_boxY
-      shift = 400
+      shift = 500
    end
 
    material.SetActorMaterial(mesh, material.wall_materials[params.material])
@@ -114,10 +114,10 @@ function occluder.setup(id, params)
 
    if params.startPosition == 'up' then
       uetorch.SetActorRotation(mesh, 0, params.rotation, 0)
-      uetorch.SetActorLocation(mesh, shift - 200 * params.scale[1], -350 - shift, 20)
+      uetorch.SetActorLocation(mesh, shift - 300, -150 - shift, 20)
    else -- down
       uetorch.SetActorRotation(mesh, 0, params.rotation, 90)
-      uetorch.SetActorLocation(mesh, shift - 200 * params.scale[1], -350, 20 + box)
+      uetorch.SetActorLocation(mesh, shift - 300, -150 - shift, 20 + box)
    end
 
    -- register the occluder for motion (through the occluder.tick
