@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2016 Mario Ynocente Castro, Mathieu Bernard
+# Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
 #
 # You can redistribute this file and/or modify it under the terms of
 # the GNU General Public License as published by the Free Software
@@ -288,18 +288,19 @@ def _Run(command, log, config_file, output_dir, seed=None, dry=False):
     if output_dir[-1] != '/':
         output_dir += '/'
 
-    # TODO check the config_file has no error -> json parser
-
     # setup the environment variables used in lua scripts
     environ = copy.deepcopy(os.environ)
     environ['NAIVEPHYSICS_DATA'] = output_dir
     environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
+
     if dry:
         environ['NAIVEPHYSICS_DRY'] = 'true'
         log.info('running in dry mode: do not capture any image')
+
     if seed is not None:
         environ['NAIVEPHYSICS_SEED'] = str(seed)
 
+    # run the command as a subprocess
     job = subprocess.Popen(
         shlex.split(command),
         stdin=None,
@@ -320,8 +321,8 @@ def _Run(command, log, config_file, output_dir, seed=None, dry=False):
         target=ConsumeLines,
         args=[job.stdout, lambda line: log.info(line)]).start()
 
+    # wait the job is finished, forwarding any error
     job.wait()
-
     if job.returncode:
         log.error('command "%s" returned with %s', command, job.returncode)
         sys.exit(job.returncode)
@@ -344,7 +345,6 @@ def RunBinary(output_dir, config_file, njobs=1,
 
     if not os.path.isfile(config_file):
         raise IOError('Json file not found: {}'.format(config_file))
-    # TODO check the json file is correctly formatted
 
     print('running {}{}'.format(
         os.path.basename(NAIVEPHYSICS_BINARY),
@@ -417,8 +417,18 @@ def Main():
             shutil.rmtree(output_dir)
         else:
             raise IOError(
-                'Existing output directory {}'.format(output_dir))
+                'Existing output directory {}\n'
+                'Use the --force option to overwrite it'
+                .format(output_dir))
     os.makedirs(output_dir)
+
+    # check the config_file is a correct JSON file
+    try:
+        json.load(open(args.config_file, 'r'))
+    except ValueError:
+        raise IOError(
+              'The configuration is not a valid JSON file: {}'
+              .format(args.config_file))
 
     # run the simulation either in the editor or as a standalone
     # program
