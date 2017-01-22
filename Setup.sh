@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2016 Mario Ynocente Castro, Mathieu Bernard
+# Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
 #
 # You can redistribute this file and/or modify it under the terms of
 # the GNU General Public License as published by the Free Software
@@ -45,7 +45,7 @@ echo "Step 2: setup Unreal Engine and UETorch"
 # clone only branch 4.8 to save space and bandwidth
 git clone --branch 4.8 --depth 1 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
 cd $UNREALENGINE_ROOT
-git clone git@github.com:marioyc/UETorch.git Engine/Plugins/UETorch
+git clone git@github.com:bootphon/UETorch.git Engine/Plugins/UETorch
 Engine/Plugins/UETorch/Setup.sh
 ./Setup.sh
 ./GenerateProjectFiles.sh

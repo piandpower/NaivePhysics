@@ -4,7 +4,7 @@
 Developed
 with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
-4.8 and our [UETorch](https://github.com/marioyc/UETorch) fork.
+4.8 and our [UETorch](https://github.com/bootphon/UETorch) fork.
 
 ## Installation details
 
@@ -161,7 +161,7 @@ Each block script independently sets the scenario for the simulation and should 
 
 ## License
 
-**Copyright 2016 Mario Ynocente Castro, Mathieu Bernard**
+**Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard**
 
 
 This program is free software: you can redistribute it and/or modify
