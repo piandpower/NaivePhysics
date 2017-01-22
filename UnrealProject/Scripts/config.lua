@@ -1,5 +1,5 @@
 local uetorch = require 'uetorch'
-local json = require 'cjson'
+local json = require 'dkjson'
 local config = {}
 
 
@@ -35,7 +35,7 @@ end
 -- Write a table as a JSon file
 function WriteJson(t, file)
    local f = assert(io.open(file, "wb"))
-   f:write(json.encode(t))
+   f:write(json.encode(t, {indent = true}))
    f:close()
 end
 

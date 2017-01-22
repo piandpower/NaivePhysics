@@ -20,7 +20,6 @@ TODO list for the NaivePhysics project
    - random light position/number -> variable shadows
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
-** format params.json to have spaces and new lines
 ** refactor status.txt
 ** run on a headless cluster
 *** The problem is remote openGl rendering
