@@ -16,21 +16,14 @@ function Unique(t)
 end
 
 
--- Force the rendered image to be 512x288 (16:9 ratio)
+-- Force the rendered image to be 288x288
 function SetResolution(dt)
    uetorch.SetResolution(288, 288)
-   -- uetorch.SetResolution(512, 512)
 end
 
 
-uetorch.SetTickDeltaBounds(1/8, 1/8)
-
--- TODO see if can put that in M.initialize()
--- TODO need to preserve the seed (no reinitialization) over retries
--- for the same run. The SEED+1 is just a very bad fix for the
--- moment...
+-- setup the random seed
 local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
--- print('setup random seed to ' .. seed)
 math.randomseed(seed)
 posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
@@ -43,17 +36,16 @@ RunBlock = nil
 
 -- replace uetorch's Tick function
 Tick = utils.Tick
+uetorch.SetTickDeltaBounds(1/8, 1/8)
 
+
+local camera = assert(uetorch.GetActor("Camera"))
 local iterationId, iterationType, iterationBlock, iterationPath
-
-
 local screenTable, depthTable = {}, {}
 local tLastSaveScreen = 0
 local tSaveScreen = 0
 local step = 0
 local max_depth = 0
-
-local camera = assert(uetorch.GetActor("Camera"))
 
 
 -- Save screenshot, object masks and depth field into png images

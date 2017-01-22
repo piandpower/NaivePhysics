@@ -12,16 +12,6 @@ TODO list for the NaivePhysics project
     - An evaluation on the server (with registration)
 *** release of a NaivePhysics-1.0 version as well
 
-* Bugs
-** optimize checks in C1_dynamic_1
-   - detect failures right after iterationType 5, not after the whole run!!
-   - as done in C1_dynamic_2 block
-** parallelization
-*** test -j2 and -j3
-*** fix the bug in balancing jsons
-*** should be better/simpler with a randomization in python
-    thus the json would have one entry per run, all parameters already fixed from Python
-
 * Improvements
 ** more textures
    integrate the downloaded materials to the project
@@ -41,3 +31,6 @@ TODO list for the NaivePhysics project
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
   servers (EGL is enough).
+** optimize checks in C1_dynamic_1
+   - detect failures right after iterationType 5, not after the whole run!!
+   - as done in C1_dynamic_2 block

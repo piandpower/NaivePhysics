@@ -209,60 +209,69 @@ def ParseArgs():
     return parser.parse_args()
 
 
+def _BalanceList(l, n):
+    """Balance the elements of a list of integers into `n` sublists
+
+    This is used for subjobs configuration generation.
+
+    >>> balance_list([5, 1, 2], 2) == [[3, 0, 1], [2, 1, 1]]
+
+    Sublists with only zeros are removed
+
+    >>> balance_list([1, 0], 2) == [[1, 0]]
+
+    """
+    balanced = [[(v / n if v >= n else 0) for v in l] for _ in range(n)]
+
+    idx = 0
+    for i, v in enumerate(l):
+        if v < n:
+            for j in range(v):
+                balanced[(j + idx) % n][i] = 1
+            idx += v
+
+    idx = 0
+    for i, v in enumerate(l):
+        diff = v - sum(s[i] for s in balanced)
+        if diff:
+            balanced[idx][i] += diff
+            idx = (idx + 1) % n
+
+    balanced = [s for s in balanced if sum(s)]
+
+    for i in range(len(l)):
+        assert sum(b[i] for b in balanced) == l[i]
+
+    return balanced
+
+
 def _BalanceConfig(config, njobs):
     """Split the `config` into `n` parts returned as list of dicts
 
-    TODO this is buggy for now
+    Return a tuple (subconfigs, nruns, njobs) where subconfigs is a
+    list of JSON dicts, each one being the configuration of a
+    subjob. `nruns` is a list of the total number of runs in each
+    subjobs. `njobs` can be modified and is returned as the third
+    element in the pair.
+
     """
-    # count the number of runs and iterations defined in the json
-    total_iterations = 0
-    total_runs = 0
-    for k, v in config.iteritems():
-        # this is a rough approximation of the real workload, to
-        # refine it we must discriminate blocks and get nb of test
-        # iterations (5 or 6)
-        total_iterations += v['train']
-        total_iterations += v['test'] * 5
+    # compute the list of balanced subjobs (from nested dict to list)
+    values = list(v for vv in config.values() for v in vv.values())
+    balanced = _BalanceList(values, njobs)
+    nruns = [sum(l) for l in balanced]
 
-        total_runs += v['test'] + v['train']
+    if njobs > len(balanced):
+        njobs = len(balanced)
+        print('reducing the number of jobs to {}'.format(njobs))
 
-    print('The json file defines a total of {} iterations for {} runs'
-          .format(total_iterations, total_runs))
+    # create subconfigs for each subjob (from list to nested dict)
+    subconfigs = [copy.deepcopy(config) for _ in range(njobs)]
+    for name, block in config.items():
+        for j, category in enumerate(block.keys()):
+            for i in range(njobs):
+                subconfigs[i][name][category] = balanced[i][j]
 
-    if njobs > total_runs:
-        print('reducing the number of jobs to {} (number of runs)'
-              .format(total_runs))
-        njobs = total_runs
-
-    target_iterations = total_iterations / njobs
-    print('Will run {} iterations per job'.format(target_iterations))
-
-    # create an empty config as a pattern for the new ones
-    empty_json = copy.deepcopy(config)
-    for k, v in empty_json.iteritems():
-        v['train'] = 0
-        v['test'] = 0
-
-    # create the sub-configs
-    subconfigs = []
-    for i in range(1, njobs + 1):
-        subconf = copy.deepcopy(empty_json)
-        sub_iterations = 0
-        while sub_iterations < target_iterations:
-            sum_it = 0
-            for k, v in config.iteritems():
-                for kind in ('test', 'train'):
-                    if v[kind] != 0:
-                        sum_it += v[kind]
-                        subconf[k][kind] += 1
-                        v[kind] -= 1
-                        sub_iterations += 1 if kind == 'train' else 5
-            if sum_it == 0:
-                break
-
-        subconfigs.append(subconf)
-
-    return subconfigs, njobs
+    return subconfigs, nruns, njobs
 
 
 def _Run(command, log, config_file, output_dir, seed=None, dry=False):
@@ -356,7 +365,7 @@ def RunBinary(output_dir, config_file, njobs=1,
              config_file, output_dir, seed=seed, dry=dry)
     else:
         # split the json configuration file into balanced subparts
-        subconfigs, njobs = _BalanceConfig(
+        subconfigs, nruns, njobs = _BalanceConfig(
             json.load(open(config_file, 'r')), njobs)
 
         # write them in subdirectories
@@ -369,12 +378,11 @@ def RunBinary(output_dir, config_file, njobs=1,
         # parallel must defines a different seed for each job
         seed = int(round(time.time() * 1000)) if seed is None else seed
 
-        # define arguments list for joblib
+        # define arguments list for each jobs
         _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
         _conf = [os.path.join(output_dir, str(i), 'config.json')
                  for i in range(1, njobs+1)]
-        _seed = [None if seed is None else str(seed + i - 1)
-                 for i in range(1, njobs+1)]
+        _seed = [str(seed + sum(nruns[:i])) for i in range(njobs)]
         _log = [GetLogger(name='job {}'.format(i))
                 for i in range(1, njobs+1)]
 
@@ -406,12 +414,46 @@ def RunEditor(output_dir, config_file, seed=None, dry=False, verbose=False):
          seed=seed, dry=dry)
 
 
+def FindDuplicates(directory):
+    """Find any duplicated scenes in `directory`
+
+    Having two identical scenes is very unlikely but was a problem
+    while coding the '--njobs' option...
+
+    Load and compare all 'params.json' files found in
+    `directory`. Print duplicate on stdout.
+
+    """
+    # load all 'params.json' files in a dict: file -> content
+    params = []
+    for root, dirs, files in os.walk("./data"):
+        for file in files:
+            if file.endswith("params.json"):
+                params.append(os.path.join(root, file))
+    params = {p: json.load(open(p, 'r')) for p in params}
+
+    # ensure each file have a different content (can't use
+    # collections.Counter because dicts are unhashable)
+    duplicate = []
+    for i, (n1, p1) in enumerate(params.items()):
+        for n2, p2 in params.items()[i+1:]:
+            if p1 == p2:
+                duplicate.append((n1, n2))
+
+    if len(duplicate):
+        print('WARNING: Found {} duplicated scenes.'.format(len(duplicate)))
+        print('The following scenes are the same:')
+        for (n1, n2) in sorted(duplicate):
+            print('{}  ==  {}'.format(os.path.dirname(n1), os.path.dirname(n2)))
+
+
+
 def Main():
+    # parse command-line arguments
     args = ParseArgs()
 
-    output_dir = os.path.abspath(args.output_dir)
-
     # setup an empty output directory
+    output_dir = os.path.abspath(args.output_dir)
     if os.path.exists(output_dir):
         if args.force:
             shutil.rmtree(output_dir)
@@ -439,6 +481,10 @@ def Main():
         RunBinary(output_dir, args.config_file, njobs=args.njobs,
                   seed=args.seed, dry=args.dry, verbose=args.verbose)
 
+    # check for duplicated scenes
+    #if not args.dry:
+    FindDuplicates(output_dir)
+
 
 if __name__ == '__main__':
     try:
@@ -448,4 +494,4 @@ if __name__ == '__main__':
         sys.exit(-1)
     except KeyboardInterrupt:
         print('Keyboard interruption, exiting')
-        sys.exit(-1)
+        sys.exit(0)
