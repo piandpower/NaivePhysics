@@ -368,6 +368,10 @@ def RunBinary(output_dir, config_file, njobs=1,
         subconfigs, nruns, njobs = _BalanceConfig(
             json.load(open(config_file, 'r')), njobs)
 
+        # increase artificially the nruns to have margin for retries
+        # (this can occur for test runs)
+        nruns = [10 * r for r in nruns]
+
         # write them in subdirectories
         for i, config in enumerate(subconfigs, 1):
             path = os.path.join(output_dir, str(i))
