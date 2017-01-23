@@ -12,7 +12,7 @@ cd $UNREALENGINE_ROOT/Engine/Build/BatchFiles
 ./RunUAT.sh BuildCookRun \
             -project="$NAIVEPHYSICS_ROOT/UnrealProject/NaivePhysics.uproject" \
             -noP4 -platform=Linux -clientconfig=Development -serverconfig=Development \
-            -cook -compressed -allmaps -build -stage -pak -archive \
+            -cook -allmaps -build -stage -pak -archive \
             -archivedirectory="$NAIVEPHYSICS_ROOT/UnrealProject/Package/"
 
 cd -

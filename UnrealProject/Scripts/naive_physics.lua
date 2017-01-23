@@ -84,8 +84,18 @@ local function SaveScreen(dt)
 
       -- save the objects segmentation masks
       if i3 then
+         local max1 = i3:max()
+         local max2 = block.MaxActors()
+
          i3 = i3:float()  -- cast from int to float for normalization
          i3:apply(function(x) return x / block.MaxActors() end)
+         local max3 = i3:max()
+
+         for k, u in pairs(Unique(i3)) do
+            print(u .. '\t' .. math.floor(u*255))
+         end
+         print('in mask: ' .. max1 .. ' ' .. max2 .. ' ' .. max3)
+
          image.save(mask_file, i3)
       end
 

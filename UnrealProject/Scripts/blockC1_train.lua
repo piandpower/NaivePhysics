@@ -54,7 +54,11 @@ end
 
 function block.MaxActors()
    -- spheres + occluders + floor + backwall*3
-   return params.n + params.nOccluders + 4
+   local max = 1 -- floor
+   if params.isBackwall then
+      max = max + 3
+   end
+   return max + params.n + params.nOccluders
 end
 
 
