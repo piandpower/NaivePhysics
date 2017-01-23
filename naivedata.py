@@ -60,15 +60,21 @@ JSON_EXEMPLE = '''
 
 This generates 100 train videos and 15 test videos (5 for each variant).'''
 
-# path to packaged the NaivePhysics binary (environment variable has
-# been setup in activate-naivephysics)
-NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
+try:
+    # path to packaged the NaivePhysics binary (environment variable has
+    # been setup in activate-naivephysics)
+    NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
 
-# path to the UnrealEngine directory
-UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
+    # path to the UnrealEngine directory
+    UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
 
-# path to the NaivePhysics directory
-NAIVEPHYSICS_ROOT = os.environ['NAIVEPHYSICS_ROOT']
+    # path to the NaivePhysics directory
+    NAIVEPHYSICS_ROOT = os.environ['NAIVEPHYSICS_ROOT']
+except KeyError as err:
+    print('Error: the environment variable {} is not defined, '
+          'did you run "source activate-naivephysics" ?'
+          .format(err.message))
+    sys.exit(-1)
 
 
 class LogStripFormatter(logging.Formatter):
