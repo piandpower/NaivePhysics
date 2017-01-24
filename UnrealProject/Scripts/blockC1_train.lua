@@ -21,31 +21,36 @@ local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
 
 
-local mainActor
-function block.MainActor()
-   return mainActor
+function block.IsPossible()
+   -- train blocks are always physically possible
+   return true
 end
 
 
 function block.MaskingActors()
+   -- on train, we don't have any inactive actor
    local active, inactive, text = {}, {}, {}
+
+   table.insert(active, floor)
+   table.insert(text, "floor")
 
    if params.isBackwall then
       backwall.tableInsert(active, text)
    end
 
-   table.insert(active, occluder1)
-   table.insert(active, occluder2)
-   table.insert(active, floor)
+   if params.nOccluders >=1 then
+      table.insert(active, occluder1)
+      table.insert(text, "occluder1")
+   end
 
-   table.insert(text, "occluder1")
-   table.insert(text, "occluder2")
-   table.insert(text, "floor")
+   if params.nOccluders >= 2 then
+      table.insert(active, occluder2)
+      table.insert(text, "occluder2")
+   end
 
-   -- on train, we don't have any inactive actor
-   for n, s in pairs(spheres) do
-      table.insert(active, s)
-      table.insert(text, 'sphere' .. n)
+   for i = 1, params.n do
+      table.insert(active, spheres[i])
+      table.insert(text, 'sphere' .. i)
    end
 
    return active, inactive, text
@@ -157,7 +162,6 @@ function block.SetBlock(currentIteration)
    params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
 
-   mainActor = spheres[params.index]
    for i = 1, params.n do
       block.actors['sphere' .. i] = spheres[i]
    end
@@ -186,9 +190,7 @@ function block.RunBlock()
          occluder.setup(i, params.occluder[i])
       end
    end
-
    utils.AddTickHook(occluder.tick)
-   --utils.AddTickHook(StartDown)
 
    -- spheres
    uetorch.SetActorVisible(sphere, true)
@@ -215,20 +217,5 @@ function block.RunBlock()
    end
 end
 
-local checkData = {}
-local saveTick = 1
-
-function block.SaveCheckInfo(dt)
-   local aux = {}
-   aux.location = uetorch.GetActorLocation(mainActor)
-   aux.rotation = uetorch.GetActorRotation(mainActor)
-   table.insert(checkData, aux)
-   saveTick = saveTick + 1
-end
-
-
-function block.IsPossible()
-   return true  -- train always physically possible
-end
 
 return block

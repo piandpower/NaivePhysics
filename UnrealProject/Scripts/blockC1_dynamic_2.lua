@@ -13,7 +13,7 @@ local sphere3 = uetorch.GetActor("Sphere_3")
 local spheres = {sphere, sphere2, sphere3}
 local wall1 = uetorch.GetActor("Occluder_1")
 local wall2 = uetorch.GetActor("Occluder_2")
-local wall1_boxY,wall2_boxY
+local wall1_boxY, wall2_boxY
 block.actors = {wall1=wall1, wall2=wall2}
 
 local iterationId, iterationType, iterationBlock, iterationPath
@@ -130,23 +130,24 @@ end
 function block.MaskingActors()
    local active, inactive, text = {}, {}, {}
 
+   table.insert(active, floor)
+   table.insert(text, "floor")
+
    if params.isBackwall then
       backwall.tableInsert(active, text)
    end
 
    table.insert(active, wall1)
-   table.insert(active, wall2)
-   table.insert(active, floor)
+   table.insert(text, "occluder1")
 
-   table.insert(text, "wall1")
-   table.insert(text, "wall2")
-   table.insert(text, "floor")
+   table.insert(active, wall2)
+   table.insert(text, "occluder2")
 
    -- on test, the main actor only can be inactive (when hidden)
    for i = 1, params.n do
+      table.insert(text, 'sphere' .. i)
       if i ~= params.index then
          table.insert(active, spheres[i])
-         table.insert(text, 'sphere' .. i)
       end
    end
 
@@ -157,7 +158,6 @@ function block.MaskingActors()
       or (not possible and visible1 and trick1 and trick2) -- visible 3rd third
    then
       table.insert(active, mainActor)
-      table.insert(text, 'sphere' .. params.index)
    else
       table.insert(inactive, mainActor)
    end
@@ -167,7 +167,11 @@ end
 
 
 function block.MaxActors()
-   return params.n + 6 -- spheres + 2 walls + floor + 3*backwall
+   local max = 3 -- floor + 2 occluders
+   if params.isBackwall then
+      max = max + 3
+   end
+   return max + params.n
 end
 
 

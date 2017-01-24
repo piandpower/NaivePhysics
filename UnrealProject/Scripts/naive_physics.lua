@@ -84,18 +84,8 @@ local function SaveScreen(dt)
 
       -- save the objects segmentation masks
       if i3 then
-         local max1 = i3:max()
-         local max2 = block.MaxActors()
-
          i3 = i3:float()  -- cast from int to float for normalization
          i3:apply(function(x) return x / block.MaxActors() end)
-         local max3 = i3:max()
-
-         for k, u in pairs(Unique(i3)) do
-            print(u .. '\t' .. math.floor(u*255))
-         end
-         print('in mask: ' .. max1 .. ' ' .. max2 .. ' ' .. max3)
-
          image.save(mask_file, i3)
       end
 
@@ -204,10 +194,11 @@ local function SaveData()
       file:write("pitch = " .. cam_rot.pitch .. " roll = " .. cam_rot.roll ..
                     " yaw = " .. cam_rot.yaw .. "\n")
 
-      file:write("masks:\n")
+      file:write("masks grayscale:\n0 = sky ")
       local _, _, masks = block.MaskingActors()
+      local max_actors = block.MaxActors()
       for n, m in pairs(masks) do
-         file:write(n .. ' = ' .. m .. ' ')
+         file:write(math.floor(255 * n/ max_actors) .. ' = ' .. m .. ' ')
       end
       file:write('\n')
 

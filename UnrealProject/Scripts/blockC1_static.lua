@@ -154,21 +154,21 @@ end
 function block.MaskingActors()
    local active, inactive, text = {}, {}, {}
 
+   table.insert(active, floor)
+   table.insert(text, "floor")
+
    if params.isBackwall then
       backwall.tableInsert(active, text)
    end
 
    table.insert(active, wall)
-   table.insert(active, floor)
-
-   table.insert(text, "wall")
-   table.insert(text, "floor")
+   table.insert(text, "occluder1")
 
    -- on test, the main actor only can be inactive (when hidden)
    for i = 1, params.n do
+      table.insert(text, "sphere" .. i)
       if i ~= params.index then
          table.insert(active, spheres[i])
-         table.insert(text, "sphere" .. i)
       end
    end
 
@@ -178,7 +178,6 @@ function block.MaskingActors()
       or (not possible and visible2 and trick1) -- visible 2nd half
    then
       table.insert(active, mainActor)
-      table.insert(text, "sphere" .. params.index)
    else
       table.insert(inactive, mainActor)
    end
@@ -186,8 +185,13 @@ function block.MaskingActors()
    return active, inactive, text
 end
 
+
 function block.MaxActors()
-   return params.n + 5 -- spheres + occluder + floor + 3*backwall
+   local max = 2 -- floor + occluder
+   if params.isBackwall then
+      max = max + 3
+   end
+   return max + params.n
 end
 
 
